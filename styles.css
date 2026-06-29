@@ -1,0 +1,866 @@
+/* ============================================
+   PnL Tracker — стили
+   Тема: тёмный терминал, моноширинные числа,
+   мятно-зелёный/коралловый акценты PnL
+   ============================================ */
+
+:root {
+  --bg: #0B0D11;
+  --surface: #10131A;
+  --surface-2: #161A21;
+  --surface-3: #181C24;
+  --border: #1B1F27;
+  --border-soft: rgba(255, 255, 255, 0.04);
+
+  --text: #E8EAED;
+  --text-secondary: #9BA3B0;
+  --text-muted: #5C6370;
+  --text-faint: #76808F;
+
+  --success: #3DDC97;
+  --success-bg: rgba(61, 220, 151, 0.10);
+  --danger: #E5534B;
+  --danger-bg: rgba(229, 83, 75, 0.10);
+  --accent: #5B8DEF;
+  --accent-light: #7BA3F5;
+  --accent-bg: rgba(91, 141, 239, 0.12);
+  --warning: #E5A03D;
+  --warning-bg: rgba(229, 160, 61, 0.12);
+
+  --radius: 11px;
+  --radius-sm: 8px;
+
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+/* Числовые значения — всегда моноширинный шрифт с табличным выравниванием */
+.mono,
+.pnl-value,
+.metric-value,
+.price-value,
+.r-value {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ Каркас приложения ============ */
+
+#app {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+}
+
+.screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  padding-bottom: 76px; /* место под таб-бар */
+  animation: fade-in 0.15s ease;
+}
+
+.screen.active {
+  display: flex;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============ Хедер ============ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px 12px;
+}
+
+.header h1 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.icon-btn:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ============ Карточки ============ */
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.section {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+/* ============ Карточка PnL (главная на дашборде) ============ */
+
+.pnl-card {
+  background: linear-gradient(180deg, #14181F 0%, #11141A 100%);
+  border-radius: 14px;
+  padding: 18px 16px;
+}
+
+.pnl-card-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+
+.pnl-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pnl-value {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.pnl-value.positive { color: var(--success); }
+.pnl-value.negative { color: var(--danger); }
+.pnl-value.neutral { color: var(--text-muted); }
+
+.pnl-pct {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.pnl-pct.positive { color: var(--success); background: var(--success-bg); }
+.pnl-pct.negative { color: var(--danger); background: var(--danger-bg); }
+
+.equity-chart {
+  width: 100%;
+  height: 48px;
+  margin-top: 14px;
+  display: block;
+}
+
+/* ============ Метрики (3 в ряд) ============ */
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.metric-card {
+  padding: 0;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* ============ Список сделок ============ */
+
+.trade-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+.trade-row + .trade-row {
+  border-top: 1px solid var(--border);
+}
+
+.trade-row:hover .trade-symbol {
+  color: var(--accent);
+}
+
+.trade-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.trade-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.trade-icon.long {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.trade-icon.short {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.trade-symbol {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.trade-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.trade-right {
+  text-align: right;
+}
+
+.trade-pnl {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.trade-pnl.positive { color: var(--success); }
+.trade-pnl.negative { color: var(--danger); }
+
+.trade-r {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ============ Пустое состояние ============ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px 24px;
+}
+
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.empty-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 260px;
+  margin-bottom: 20px;
+}
+
+/* ============ Кнопки ============ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: opacity 0.15s;
+}
+
+.btn:hover { opacity: 0.88; }
+.btn:active { opacity: 0.7; }
+
+.btn-block { width: 100%; }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost {
+  background: none;
+  color: var(--text-secondary);
+}
+
+.btn-danger-ghost {
+  background: none;
+  color: var(--danger);
+}
+
+/* ============ Фильтры-чипы ============ */
+
+.filter-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 16px 10px;
+  scrollbar-width: none;
+}
+
+.filter-row::-webkit-scrollbar { display: none; }
+
+.chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 8px;
+  border: none;
+  color: var(--text-faint);
+  background: none;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.chip.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+/* ============ Поиск / инпуты ============ */
+
+.search-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 12px;
+}
+
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+}
+
+.search-box input {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  padding: 10px 12px;
+  width: 100%;
+  font-family: var(--font-body);
+  outline: none;
+}
+
+input.mono-input {
+  font-family: var(--font-mono);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+}
+
+label.field-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  margin-top: 14px;
+}
+
+label.field-label:first-child { margin-top: 0; }
+
+/* ============ Дата-группы в журнале ============ */
+
+.date-group-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 14px 0 4px;
+}
+
+.date-group-label:first-child {
+  margin-top: 0;
+}
+
+/* ============ Деталь сделки ============ */
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 0;
+}
+
+.detail-header h1 {
+  flex: 1;
+}
+
+.source-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.source-badge.auto {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.source-badge.manual {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.detail-pnl-block {
+  text-align: center;
+  padding: 12px 0 18px;
+}
+
+.detail-pnl-block .pnl-value {
+  font-size: 30px;
+}
+
+.detail-pnl-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.detail-grid .metric-card {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+}
+
+.tags-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-pill {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.tag-pill.active {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.tag-pill.add-tag {
+  border: 1px dashed var(--border);
+  background: none;
+}
+
+.note-box {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.note-box.empty {
+  color: var(--text-muted);
+}
+
+/* ============ Аналитика — бары ============ */
+
+.bar-stat {
+  margin-bottom: 12px;
+}
+
+.bar-stat-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.bar-stat-name { color: var(--text); }
+
+.bar-track {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.bar-fill.positive { background: var(--success); }
+.bar-fill.negative { background: var(--danger); }
+
+/* ============ Настройки — список ============ */
+
+.settings-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 16px;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.settings-name { font-size: 14px; font-weight: 600; }
+.settings-handle { font-size: 12px; color: var(--text-muted); }
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.settings-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.settings-row-left .row-icon {
+  font-size: 16px;
+  color: var(--text-secondary);
+  width: 18px;
+  text-align: center;
+}
+
+.settings-row-value {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.toggle {
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left 0.15s, background 0.15s;
+}
+
+.toggle.on .toggle-dot {
+  left: 19px;
+  background: #fff;
+}
+
+/* ============ Exchange connect ============ */
+
+.exchange-status-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.exchange-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--warning-bg);
+  color: var(--warning);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.exchange-info { flex: 1; }
+.exchange-name { font-size: 14px; font-weight: 600; }
+.exchange-sub { font-size: 12px; margin-top: 1px; }
+.exchange-sub.connected { color: var(--success); }
+.exchange-sub.disconnected { color: var(--text-muted); }
+
+.security-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  background: var(--warning-bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.security-note span {
+  font-size: 12px;
+  color: var(--warning);
+  line-height: 1.5;
+}
+
+/* ============ Таб-бар ============ */
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  justify-content: space-around;
+  padding: 9px 0 calc(9px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  z-index: 10;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  padding: 2px 18px;
+}
+
+.tab-item.active {
+  color: var(--text);
+}
+
+.tab-icon { font-size: 19px; }
+.tab-label { font-size: 11px; font-weight: 500; }
+
+/* ============ Онбординг ============ */
+
+.onboarding-slide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.onboarding-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 28px;
+}
+
+.onboarding-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.onboarding-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.onboarding-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.onboarding-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding-bottom: 16px;
+}
+
+.dot {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.dot.active { background: var(--accent); }
+
+.onboarding-actions {
+  padding: 0 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ============ Утилиты ============ */
+
+.hidden { display: none !important; }
+
+.text-muted { color: var(--text-muted); }
+.text-center { text-align: center; }
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}

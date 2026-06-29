@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PnL Tracker</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ ОНБОРДИНГ ============ -->
+  <div class="screen active" id="screen-onboarding">
+    <div id="onboarding-slides"></div>
+  </div>
+
+  <!-- ============ ДАШБОРД ============ -->
+  <div class="screen" id="screen-dashboard">
+    <div class="header">
+      <h1>Дашборд</h1>
+      <button class="icon-btn" id="dash-history-btn" title="История всех сделок">🕐</button>
+    </div>
+
+    <div class="section">
+      <div class="pnl-card">
+        <div class="pnl-card-label">Баланс счёта</div>
+        <div class="pnl-row">
+          <span class="pnl-value mono" id="dash-pnl">—</span>
+          <span class="pnl-pct mono" id="dash-pnl-pct"></span>
+        </div>
+        <canvas class="equity-chart" id="dash-equity-chart"></canvas>
+
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-label">Винрейт</div>
+            <div class="metric-value mono" id="dash-winrate">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Profit factor</div>
+            <div class="metric-value mono" id="dash-pf">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Сделок</div>
+            <div class="metric-value mono" id="dash-count">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="dash-recent-section">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <div class="section-label" style="margin-bottom: 0;">Последние сделки</div>
+        <span id="dash-see-all-btn" style="font-size: 12px; color: var(--accent); cursor: pointer;">все →</span>
+      </div>
+      <div class="card" id="dash-recent-list" style="padding: 4px 16px;">
+        <!-- заполняется через JS -->
+      </div>
+    </div>
+
+    <div class="section hidden" id="dash-empty-state">
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">Пока нет сделок</div>
+        <div class="empty-text">Подключи биржу — и последние сделки появятся здесь автоматически</div>
+        <button class="btn btn-primary" id="dash-connect-btn">🔌 Подключить Binance</button>
+        <button class="btn btn-ghost" id="dash-manual-btn" style="margin-top: 8px;">+ Добавить вручную</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ЖУРНАЛ СДЕЛОК ============ -->
+  <div class="screen" id="screen-journal">
+    <div class="header">
+      <h1>Сделки</h1>
+      <button class="icon-btn" id="journal-add-btn">＋</button>
+    </div>
+
+    <div class="filter-row">
+      <button class="chip active" data-filter-result="">Все</button>
+      <button class="chip" data-filter-result="win">Прибыльные</button>
+      <button class="chip" data-filter-result="loss">Убыточные</button>
+      <button class="chip" data-filter-source="auto">Авто</button>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="journal-search" placeholder="Символ или тег">
+      </div>
+    </div>
+
+    <div class="section" id="journal-list">
+      <!-- заполняется через JS -->
+    </div>
+
+    <div class="section hidden" id="journal-empty-state">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">Сделок не найдено</div>
+        <div class="empty-text">Попробуй изменить фильтры или добавь первую сделку</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ДЕТАЛЬ СДЕЛКИ ============ -->
+  <div class="screen" id="screen-trade-detail">
+    <div class="detail-header">
+      <button class="icon-btn" id="detail-back-btn">←</button>
+      <h1 id="detail-symbol">—</h1>
+      <span class="source-badge" id="detail-source-badge">—</span>
+    </div>
+
+    <div class="section">
+      <div class="detail-pnl-block">
+        <div class="pnl-value mono" id="detail-pnl">—</div>
+        <div class="detail-pnl-sub" id="detail-pnl-sub">—</div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="metric-card">
+          <div class="metric-label">Вход</div>
+          <div class="metric-value mono" id="detail-entry">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Выход</div>
+          <div class="metric-value mono" id="detail-exit">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Размер</div>
+          <div class="metric-value mono" id="detail-size">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Leverage</div>
+          <div class="metric-value mono" id="detail-leverage">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Теги</div>
+      <div class="tags-row" id="detail-tags"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Заметка</div>
+      <textarea id="detail-note" rows="4" placeholder="Почему вошёл, что по плану, что не по плану..."></textarea>
+      <button class="btn btn-secondary btn-block" id="detail-save-note-btn" style="margin-top: 10px;">Сохранить заметку</button>
+    </div>
+
+    <div class="section">
+      <button class="btn btn-danger-ghost btn-block" id="detail-delete-btn">Удалить сделку</button>
+    </div>
+  </div>
+
+  <!-- ============ ДОБАВИТЬ / РЕДАКТИРОВАТЬ СДЕЛКУ ============ -->
+  <div class="screen" id="screen-add-trade">
+    <div class="detail-header">
+      <button class="icon-btn" id="add-back-btn">←</button>
+      <h1>Новая сделка</h1>
+      <span style="width: 32px;"></span>
+    </div>
+
+    <div class="section">
+      <label class="field-label">Дата сделки (необязательно)</label>
+      <input type="date" id="add-trade-date">
+
+      <label class="field-label">Актив</label>
+      <input type="text" id="add-symbol" placeholder="BTCUSDT">
+
+      <label class="field-label">Направление</label>
+      <select id="add-direction">
+        <option value="long">Long</option>
+        <option value="short">Short</option>
+      </select>
+
+      <label class="field-label">Risk Reward (R)</label>
+      <input type="number" class="mono-input" id="add-result-r" placeholder="2.0" step="0.1">
+
+      <label class="field-label">PnL, $ (необязательно)</label>
+      <input type="number" class="mono-input" id="add-pnl-usd" placeholder="86.40" step="0.01">
+
+      <label class="field-label">Заметка (необязательно)</label>
+      <textarea id="add-note" rows="3" placeholder="Контекст входа..."></textarea>
+
+      <button class="btn btn-primary btn-block" id="add-submit-btn" style="margin-top: 18px;">Добавить сделку</button>
+    </div>
+  </div>
+
+  <!-- ============ АНАЛИТИКА ============ -->
+  <div class="screen" id="screen-analytics">
+    <div class="header">
+      <h1>Аналитика</h1>
+    </div>
+
+    <div class="section">
+      <div class="section-label">PnL по тегам</div>
+      <div class="card" id="analytics-by-tag">
+        <!-- заполняется через JS -->
+      </div>
+    </div>
+
+    <div class="section hidden" id="analytics-empty-state">
+      <div class="empty-state">
+        <div class="empty-icon">📈</div>
+        <div class="empty-title">Пока нет данных</div>
+        <div class="empty-text">Добавь сделки с тегами — аналитика появится здесь</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ПОДКЛЮЧЕНИЕ БИРЖИ ============ -->
+  <div class="screen" id="screen-exchange">
+    <div class="detail-header">
+      <button class="icon-btn" id="exchange-back-btn">←</button>
+      <h1>Подключение биржи</h1>
+      <span style="width: 32px;"></span>
+    </div>
+
+    <div class="section" style="margin-top: 12px;">
+      <div class="exchange-status-card">
+        <div class="exchange-icon">₿</div>
+        <div class="exchange-info">
+          <div class="exchange-name">Binance</div>
+          <div class="exchange-sub disconnected" id="exchange-status-text">Не подключено</div>
+        </div>
+      </div>
+
+      <label class="field-label">API key</label>
+      <input type="text" id="exchange-api-key" placeholder="Вставь API key">
+
+      <label class="field-label">Secret key</label>
+      <input type="text" id="exchange-secret-key" placeholder="Вставь Secret key">
+
+      <div class="security-note" style="margin-top: 16px;">
+        <span>🛡️</span>
+        <span>Используется только read-only доступ. Торговые и выводные права не запрашиваются.</span>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="exchange-connect-btn">Подключить</button>
+    </div>
+  </div>
+
+  <!-- ============ НАСТРОЙКИ ============ -->
+  <div class="screen" id="screen-settings">
+    <div class="header">
+      <h1>Настройки</h1>
+    </div>
+
+    <div class="section">
+      <div class="settings-profile">
+        <div class="avatar-circle" id="settings-avatar">Я</div>
+        <div>
+          <div class="settings-name" id="settings-name">—</div>
+          <div class="settings-handle" id="settings-handle">—</div>
+        </div>
+      </div>
+
+      <div class="section-label">Баланс счёта</div>
+      <label class="field-label" style="margin-top: 0;">Стартовый баланс, $</label>
+      <input type="number" class="mono-input" id="settings-starting-balance" placeholder="1000" step="0.01">
+      <button class="btn btn-secondary btn-block" id="settings-save-balance-btn" style="margin-top: 10px;">Сохранить</button>
+
+      <div class="section-label" style="margin-top: 20px;">Данные</div>
+      <div class="settings-row" id="settings-exchange-row">
+        <div class="settings-row-left"><span class="row-icon">🔌</span>Подключение биржи</div>
+        <span class="settings-row-value">→</span>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-left"><span class="row-icon">⬇️</span>Экспорт в CSV</div>
+        <span class="settings-row-value">→</span>
+      </div>
+      <div class="settings-row" id="settings-delete-row">
+        <div class="settings-row-left" style="color: var(--danger);"><span class="row-icon">🗑️</span>Удалить все данные</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ТАБ-БАР ============ -->
+  <div class="tab-bar hidden" id="tab-bar">
+    <button class="tab-item active" data-screen="dashboard">
+      <span class="tab-icon">▦</span>
+      <span class="tab-label">Дашборд</span>
+    </button>
+    <button class="tab-item" data-screen="journal">
+      <span class="tab-icon">☰</span>
+      <span class="tab-label">Сделки</span>
+    </button>
+    <button class="tab-item" data-screen="analytics">
+      <span class="tab-icon">▲</span>
+      <span class="tab-label">Аналитика</span>
+    </button>
+    <button class="tab-item" data-screen="settings">
+      <span class="tab-icon">⚙</span>
+      <span class="tab-label">Настройки</span>
+    </button>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
