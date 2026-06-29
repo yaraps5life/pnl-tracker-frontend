@@ -252,6 +252,7 @@ document.getElementById('dash-connect-btn').addEventListener('click', () => show
 document.getElementById('dash-manual-btn').addEventListener('click', () => showScreen('add-trade'));
 document.getElementById('dash-history-btn').addEventListener('click', () => showScreen('journal'));
 document.getElementById('dash-see-all-btn').addEventListener('click', () => showScreen('journal'));
+document.getElementById('dash-fab-btn').addEventListener('click', () => showScreen('add-trade'));
 
 // ---------- Рендер строки сделки (общий для дашборда и журнала) ----------
 

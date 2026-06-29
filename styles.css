@@ -749,6 +749,38 @@ label.field-label:first-child { margin-top: 0; }
   line-height: 1.5;
 }
 
+/* ============ FAB — плавающая кнопка добавления (только дашборд) ============ */
+
+.fab {
+  position: fixed;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  right: max(16px, calc(50% - 240px + 16px));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(91, 141, 239, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 15;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.fab:hover {
+  opacity: 0.92;
+}
+
+.fab:active {
+  transform: scale(0.93);
+}
+
 /* ============ Таб-бар ============ */
 
 .tab-bar {
