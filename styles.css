@@ -622,6 +622,92 @@ label.field-label {
 
 label.field-label:first-child { margin-top: 0; }
 
+/* ============ Дата в хедере формы добавления сделки ============ */
+
+.date-inline-input {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 0;
+  width: auto;
+}
+
+.date-inline-input:focus {
+  color: var(--text);
+}
+
+/* ============ Переключатель Long/Short ============ */
+
+.direction-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.direction-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.direction-btn.long.active {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.direction-btn.short.active {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* ============ Переключатель результата (прибыль/убыток/без убытка) ============ */
+
+.outcome-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.outcome-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.outcome-btn.win.active {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.outcome-btn.loss.active {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.outcome-btn.breakeven.active {
+  background: var(--surface-3, var(--surface-2));
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
 /* ============ Дата-группы в журнале ============ */
 
 .date-group-label {
@@ -1023,6 +1109,46 @@ label.field-label:first-child { margin-top: 0; }
   padding: 0 20px 24px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+/* ============ Модальное окно подтверждения ============ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.modal-box {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.modal-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.modal-actions {
+  display: flex;
   gap: 8px;
 }
 

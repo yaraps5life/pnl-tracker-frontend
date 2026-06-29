@@ -85,6 +85,51 @@ function pnlClass(value) {
   return value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
 }
 
+function outcomeClass(outcome) {
+  if (outcome === 'win') return 'positive';
+  if (outcome === 'loss') return 'negative';
+  return 'neutral';
+}
+
+function outcomeLabel(outcome) {
+  if (outcome === 'win') return 'прибыль';
+  if (outcome === 'loss') return 'убыток';
+  if (outcome === 'breakeven') return 'без убытка';
+  return '—';
+}
+
+// ---------- Модальное окно подтверждения (вместо браузерного confirm()) ----------
+
+function showConfirmModal({ title, text, confirmLabel = 'Удалить' }) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('confirm-modal-overlay');
+    const titleEl = document.getElementById('confirm-modal-title');
+    const textEl = document.getElementById('confirm-modal-text');
+    const confirmBtn = document.getElementById('confirm-modal-confirm');
+    const cancelBtn = document.getElementById('confirm-modal-cancel');
+
+    titleEl.textContent = title;
+    textEl.textContent = text;
+    confirmBtn.textContent = confirmLabel;
+    overlay.classList.remove('hidden');
+
+    const cleanup = (result) => {
+      overlay.classList.add('hidden');
+      confirmBtn.removeEventListener('click', onConfirm);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onOverlayClick);
+      resolve(result);
+    };
+    const onConfirm = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    const onOverlayClick = (e) => { if (e.target === overlay) cleanup(false); };
+
+    confirmBtn.addEventListener('click', onConfirm);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onOverlayClick);
+  });
+}
+
 // ---------- Навигация между экранами ----------
 
 const SCREENS = [
@@ -112,6 +157,7 @@ function showScreen(name) {
   if (name === 'journal') loadJournal();
   if (name === 'analytics') loadAnalytics();
   if (name === 'settings') loadSettings();
+  if (name === 'add-trade') resetAddTradeForm();
 }
 
 document.querySelectorAll('.tab-item').forEach((item) => {
@@ -222,18 +268,14 @@ async function loadDashboard() {
     const { stats, recent_trades } = data;
 
     const pnlEl = document.getElementById('dash-pnl');
-    pnlEl.textContent = fmtBalance(stats.current_balance);
-    pnlEl.className = `pnl-value mono ${pnlClass(stats.pnl_total)}`;
-
-    const pctEl = document.getElementById('dash-pnl-pct');
-    pctEl.textContent = fmtPct(stats.pnl_pct);
-    pctEl.className = `pnl-pct mono ${pnlClass(stats.pnl_pct)}`;
+    pnlEl.textContent = stats.total_trades ? fmtR(stats.total_r) : '—';
+    pnlEl.className = `pnl-value mono ${pnlClass(stats.total_r)}`;
 
     document.getElementById('dash-winrate').textContent = stats.total_trades ? `${stats.winrate}%` : '—';
     document.getElementById('dash-pf').textContent = stats.total_trades ? stats.profit_factor : '—';
     document.getElementById('dash-count').textContent = stats.total_trades || '0';
 
-    drawEquityCurve(document.getElementById('dash-equity-chart'), stats.balance_curve);
+    drawEquityCurve(document.getElementById('dash-equity-chart'), stats.r_curve);
 
     const hasTrades = stats.total_trades > 0;
     document.getElementById('dash-recent-section').classList.toggle('hidden', !hasTrades);
@@ -269,8 +311,8 @@ function renderTradeRow(t) {
         </div>
       </div>
       <div class="trade-right">
-        <div class="trade-pnl ${pnlClass(t.pnl_usd ?? t.result_r)}">${t.pnl_usd != null ? fmtUsd(t.pnl_usd) : fmtR(t.result_r)}</div>
-        <div class="trade-r">${fmtR(t.result_r)}</div>
+        <div class="trade-pnl ${pnlClass(t.result_r)}">${fmtR(t.result_r)}</div>
+        <div class="trade-r ${outcomeClass(t.outcome)}">${outcomeLabel(t.outcome)}</div>
       </div>
     </div>
   `;
@@ -336,8 +378,9 @@ function renderJournalTable() {
       va = a.trade_date || a.created_at || '';
       vb = b.trade_date || b.created_at || '';
     } else if (journalSortColumn === 'result') {
-      va = a.pnl_usd ?? 0;
-      vb = b.pnl_usd ?? 0;
+      const rank = { win: 2, breakeven: 1, loss: 0 };
+      va = rank[a.outcome] ?? -1;
+      vb = rank[b.outcome] ?? -1;
     } else {
       va = a[journalSortColumn] ?? '';
       vb = b[journalSortColumn] ?? '';
@@ -376,13 +419,9 @@ function renderTableRow(t) {
   const isLong = t.direction === 'long';
   const dateStr = (t.trade_date || t.created_at || '—').split(' ')[0];
 
-  let resultClass = 'neutral';
-  let resultLabel = '—';
-  if (t.pnl_usd != null) {
-    if (t.pnl_usd > 0) { resultClass = 'win'; resultLabel = 'прибыль'; }
-    else if (t.pnl_usd < 0) { resultClass = 'loss'; resultLabel = 'убыток'; }
-    else { resultLabel = 'ноль'; }
-  }
+  const resultClassMap = { win: 'win', loss: 'loss', breakeven: 'neutral' };
+  const resultClass = resultClassMap[t.outcome] || 'neutral';
+  const resultLabel = outcomeLabel(t.outcome);
 
   return `
     <tr data-trade-id="${t.id}">
@@ -503,11 +542,11 @@ async function openTradeDetail(tradeId) {
     badge.className = `source-badge ${t.source}`;
 
     const pnlEl = document.getElementById('detail-pnl');
-    pnlEl.textContent = t.pnl_usd != null ? fmtUsd(t.pnl_usd) : fmtR(t.result_r);
-    pnlEl.className = `pnl-value mono ${pnlClass(t.pnl_usd ?? t.result_r)}`;
+    pnlEl.textContent = fmtR(t.result_r);
+    pnlEl.className = `pnl-value mono ${pnlClass(t.result_r)}`;
 
     document.getElementById('detail-pnl-sub').textContent =
-      `${t.direction} · ${fmtR(t.result_r)}${t.opened_at ? ' · ' + t.opened_at : ''}`;
+      `${t.direction} · ${outcomeLabel(t.outcome)}${t.trade_date ? ' · ' + t.trade_date : ''}`;
 
     document.getElementById('detail-entry').textContent = t.entry_price ?? '—';
     document.getElementById('detail-exit').textContent = t.exit_price ?? '—';
@@ -565,7 +604,13 @@ document.getElementById('detail-save-note-btn').addEventListener('click', async 
 });
 
 document.getElementById('detail-delete-btn').addEventListener('click', async () => {
-  if (!confirm('Удалить эту сделку?')) return;
+  const confirmed = await showConfirmModal({
+    title: 'Удалить сделку?',
+    text: 'Это действие нельзя отменить.',
+    confirmLabel: 'Удалить',
+  });
+  if (!confirmed) return;
+
   try {
     await apiDelete(`/trades/${currentTradeId}`);
     showScreen('journal');
@@ -576,18 +621,69 @@ document.getElementById('detail-delete-btn').addEventListener('click', async () 
 
 // ---------- Добавить сделку ----------
 
+let addTradeDirection = 'long';
+let addTradeOutcome = null; // 'win' | 'loss' | 'breakeven' | null
+
+function resetAddTradeForm() {
+  // Дата по умолчанию — сегодня (локальная дата в формате YYYY-MM-DD для input[type=date])
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('add-trade-date').value = `${yyyy}-${mm}-${dd}`;
+
+  document.getElementById('add-symbol').value = '';
+  document.getElementById('add-result-r').value = '';
+  document.getElementById('add-note').value = '';
+
+  addTradeDirection = 'long';
+  document.getElementById('add-direction-long').classList.add('active');
+  document.getElementById('add-direction-short').classList.remove('active');
+
+  addTradeOutcome = null;
+  document.querySelectorAll('.outcome-btn').forEach((b) => b.classList.remove('active'));
+}
+
+document.getElementById('add-direction-long').addEventListener('click', () => {
+  addTradeDirection = 'long';
+  document.getElementById('add-direction-long').classList.add('active');
+  document.getElementById('add-direction-short').classList.remove('active');
+});
+
+document.getElementById('add-direction-short').addEventListener('click', () => {
+  addTradeDirection = 'short';
+  document.getElementById('add-direction-short').classList.add('active');
+  document.getElementById('add-direction-long').classList.remove('active');
+});
+
+['win', 'loss', 'breakeven'].forEach((value) => {
+  document.getElementById(`add-outcome-${value}`).addEventListener('click', () => {
+    const btn = document.getElementById(`add-outcome-${value}`);
+    const isActive = btn.classList.contains('active');
+    document.querySelectorAll('.outcome-btn').forEach((b) => b.classList.remove('active'));
+    if (isActive) {
+      addTradeOutcome = null; // повторный клик снимает выбор
+    } else {
+      addTradeOutcome = value;
+      btn.classList.add('active');
+    }
+  });
+});
+
 document.getElementById('add-back-btn').addEventListener('click', () => showScreen('dashboard'));
 
 document.getElementById('add-submit-btn').addEventListener('click', async () => {
-  const tradeDate = document.getElementById('add-trade-date').value; // формат YYYY-MM-DD или пусто
+  const tradeDate = document.getElementById('add-trade-date').value; // формат YYYY-MM-DD
   const symbol = document.getElementById('add-symbol').value.trim();
-  const direction = document.getElementById('add-direction').value;
   const resultRRaw = document.getElementById('add-result-r').value;
-  const pnlUsdRaw = document.getElementById('add-pnl-usd').value;
   const note = document.getElementById('add-note').value.trim();
 
   if (!symbol) {
     alert('Укажи актив');
+    return;
+  }
+  if (!tradeDate) {
+    alert('Укажи дату сделки');
     return;
   }
 
@@ -595,22 +691,17 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
     await apiPost('/trades', {
       asset: symbol,
       symbol: symbol,
-      direction: direction,
+      direction: addTradeDirection,
       result_r: resultRRaw ? parseFloat(resultRRaw) : null,
-      pnl_usd: pnlUsdRaw ? parseFloat(pnlUsdRaw) : null,
-      trade_date: tradeDate ? `${tradeDate}T12:00:00` : null,
+      outcome: addTradeOutcome,
+      trade_date: `${tradeDate}T12:00:00`,
       source: 'manual',
       note: note || null,
       tags: [],
     });
 
     tg?.HapticFeedback?.notificationOccurred('success');
-    document.getElementById('add-trade-date').value = '';
-    document.getElementById('add-symbol').value = '';
-    document.getElementById('add-result-r').value = '';
-    document.getElementById('add-pnl-usd').value = '';
-    document.getElementById('add-note').value = '';
-
+    resetAddTradeForm();
     showScreen('dashboard');
   } catch (e) {
     console.error('Не удалось добавить сделку', e);
@@ -669,40 +760,31 @@ document.getElementById('exchange-connect-btn').addEventListener('click', () => 
 
 // ---------- Настройки ----------
 
-async function loadSettings() {
+function loadSettings() {
   const user = tg?.initDataUnsafe?.user;
   if (user) {
     document.getElementById('settings-name').textContent = user.first_name || 'Пользователь';
     document.getElementById('settings-handle').textContent = user.username ? `@${user.username}` : '';
     document.getElementById('settings-avatar').textContent = (user.first_name || '?')[0].toUpperCase();
   }
-
-  try {
-    const data = await apiGet('/settings');
-    document.getElementById('settings-starting-balance').value = data.starting_balance || '';
-  } catch (e) {
-    console.error('Не удалось загрузить настройки', e);
-  }
 }
 
-document.getElementById('settings-save-balance-btn').addEventListener('click', async () => {
-  const raw = document.getElementById('settings-starting-balance').value;
-  const value = parseFloat(raw);
-  if (isNaN(value) || value < 0) {
-    alert('Укажи корректный стартовый баланс');
-    return;
-  }
-  try {
-    await apiPost('/settings', { starting_balance: value });
-    tg?.HapticFeedback?.notificationOccurred('success');
-  } catch (e) {
-    console.error('Не удалось сохранить баланс', e);
-    alert('Не удалось сохранить. Проверь соединение с бэкендом.');
-  }
-});
+document.getElementById('settings-delete-row').addEventListener('click', async () => {
+  const confirmed = await showConfirmModal({
+    title: 'Удалить все данные?',
+    text: 'Будут удалены ВСЕ сделки. Это действие нельзя отменить.',
+    confirmLabel: 'Удалить всё',
+  });
+  if (!confirmed) return;
 
-document.getElementById('settings-delete-row').addEventListener('click', () => {
-  alert('Удаление всех данных пока не реализовано на бэкенде.');
+  try {
+    await apiDelete('/account/data');
+    tg?.HapticFeedback?.notificationOccurred('success');
+    showScreen('dashboard');
+  } catch (e) {
+    console.error('Не удалось удалить данные', e);
+    alert('Не удалось удалить данные. Проверь соединение с бэкендом.');
+  }
 });
 
 // ---------- Запуск ----------

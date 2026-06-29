@@ -27,10 +27,9 @@
 
     <div class="section">
       <div class="pnl-card">
-        <div class="pnl-card-label">Баланс счёта</div>
+        <div class="pnl-card-label">Суммарный R</div>
         <div class="pnl-row">
           <span class="pnl-value mono" id="dash-pnl">—</span>
-          <span class="pnl-pct mono" id="dash-pnl-pct"></span>
         </div>
         <canvas class="equity-chart" id="dash-equity-chart"></canvas>
 
@@ -172,30 +171,34 @@
 
   <!-- ============ ДОБАВИТЬ / РЕДАКТИРОВАТЬ СДЕЛКУ ============ -->
   <div class="screen" id="screen-add-trade">
-    <div class="detail-header">
+    <div class="detail-header" style="align-items: flex-start;">
       <button class="icon-btn" id="add-back-btn">←</button>
-      <h1>Новая сделка</h1>
+      <div style="flex: 1;">
+        <h1 style="margin-bottom: 4px;">Новая сделка</h1>
+        <input type="date" id="add-trade-date" class="date-inline-input">
+      </div>
       <span style="width: 32px;"></span>
     </div>
 
     <div class="section">
-      <label class="field-label">Дата сделки (необязательно)</label>
-      <input type="date" id="add-trade-date">
-
-      <label class="field-label">Актив</label>
+      <label class="field-label" style="margin-top: 0;">Актив</label>
       <input type="text" id="add-symbol" placeholder="BTCUSDT">
 
       <label class="field-label">Направление</label>
-      <select id="add-direction">
-        <option value="long">Long</option>
-        <option value="short">Short</option>
-      </select>
+      <div class="direction-toggle">
+        <button type="button" class="direction-btn long active" id="add-direction-long" data-value="long">Long</button>
+        <button type="button" class="direction-btn short" id="add-direction-short" data-value="short">Short</button>
+      </div>
 
       <label class="field-label">Risk Reward (R)</label>
       <input type="number" class="mono-input" id="add-result-r" placeholder="2.0" step="0.1">
 
-      <label class="field-label">PnL, $ (необязательно)</label>
-      <input type="number" class="mono-input" id="add-pnl-usd" placeholder="86.40" step="0.01">
+      <label class="field-label">Результат</label>
+      <div class="outcome-toggle">
+        <button type="button" class="outcome-btn win" id="add-outcome-win" data-value="win">Прибыль</button>
+        <button type="button" class="outcome-btn loss" id="add-outcome-loss" data-value="loss">Убыток</button>
+        <button type="button" class="outcome-btn breakeven" id="add-outcome-breakeven" data-value="breakeven">Без убытка</button>
+      </div>
 
       <label class="field-label">Заметка (необязательно)</label>
       <textarea id="add-note" rows="3" placeholder="Контекст входа..."></textarea>
@@ -273,12 +276,7 @@
         </div>
       </div>
 
-      <div class="section-label">Баланс счёта</div>
-      <label class="field-label" style="margin-top: 0;">Стартовый баланс, $</label>
-      <input type="number" class="mono-input" id="settings-starting-balance" placeholder="1000" step="0.01">
-      <button class="btn btn-secondary btn-block" id="settings-save-balance-btn" style="margin-top: 10px;">Сохранить</button>
-
-      <div class="section-label" style="margin-top: 20px;">Данные</div>
+      <div class="section-label">Данные</div>
       <div class="settings-row" id="settings-exchange-row">
         <div class="settings-row-left"><span class="row-icon">🔌</span>Подключение биржи</div>
         <span class="settings-row-value">→</span>
@@ -311,6 +309,18 @@
       <span class="tab-icon">⚙</span>
       <span class="tab-label">Настройки</span>
     </button>
+  </div>
+
+  <!-- ============ МОДАЛКА ПОДТВЕРЖДЕНИЯ ============ -->
+  <div class="modal-overlay hidden" id="confirm-modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title" id="confirm-modal-title">Удалить все данные?</div>
+      <div class="modal-text" id="confirm-modal-text">Это действие удалит все сделки и сбросит баланс. Отменить будет нельзя.</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="confirm-modal-cancel" style="flex: 1;">Отмена</button>
+        <button class="btn" id="confirm-modal-confirm" style="flex: 1; background: var(--danger); color: #fff;">Удалить</button>
+      </div>
+    </div>
   </div>
 
 </div>
