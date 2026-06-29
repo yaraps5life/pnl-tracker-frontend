@@ -124,6 +124,7 @@
     <div class="detail-header">
       <button class="icon-btn" id="detail-back-btn">←</button>
       <h1 id="detail-symbol">—</h1>
+      <button class="icon-btn" id="detail-favorite-btn" title="Добавить в избранное">☆</button>
       <span class="source-badge" id="detail-source-badge">—</span>
     </div>
 
@@ -182,7 +183,10 @@
 
     <div class="section">
       <label class="field-label" style="margin-top: 0;">Актив</label>
-      <input type="text" id="add-symbol" placeholder="BTCUSDT">
+      <select id="add-symbol-select"></select>
+      <div class="hidden" id="add-symbol-new-wrapper" style="margin-top: 8px;">
+        <input type="text" id="add-symbol-new-input" placeholder="Новый тикер, например SOLUSDT" style="width: 100%;">
+      </div>
 
       <label class="field-label">Направление</label>
       <div class="direction-toggle">

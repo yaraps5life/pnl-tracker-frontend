@@ -556,10 +556,43 @@ async function openTradeDetail(tradeId) {
 
     renderDetailTags(t.tags || []);
     document.getElementById('detail-note').value = t.note || '';
+
+    await updateFavoriteStar(t.symbol);
   } catch (e) {
     console.error('Не удалось загрузить сделку', e);
   }
 }
+
+async function updateFavoriteStar(symbol) {
+  const starBtn = document.getElementById('detail-favorite-btn');
+  try {
+    const data = await apiGet('/favorites');
+    const isFavorite = data.symbols.includes(symbol);
+    starBtn.textContent = isFavorite ? '★' : '☆';
+    starBtn.dataset.symbol = symbol;
+    starBtn.dataset.isFavorite = isFavorite ? 'true' : 'false';
+  } catch (e) {
+    console.error('Не удалось загрузить избранное', e);
+  }
+}
+
+document.getElementById('detail-favorite-btn').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  const symbol = btn.dataset.symbol;
+  const isFavorite = btn.dataset.isFavorite === 'true';
+
+  try {
+    if (isFavorite) {
+      await apiDelete(`/favorites/${encodeURIComponent(symbol)}`);
+    } else {
+      await apiPost(`/favorites/${encodeURIComponent(symbol)}`, {});
+    }
+    tg?.HapticFeedback?.notificationOccurred('success');
+    await updateFavoriteStar(symbol);
+  } catch (e) {
+    console.error('Не удалось обновить избранное', e);
+  }
+});
 
 function renderDetailTags(activeTags) {
   const allTags = [...new Set([...availableTags, ...activeTags])];
@@ -652,7 +685,7 @@ let addTradeDirection = 'long';
 let addTradeOutcome = null; // 'win' | 'loss' | 'breakeven' | null
 let addTradeTags = [];      // выбранные теги сетапа/сессии
 
-function resetAddTradeForm() {
+async function resetAddTradeForm() {
   // Дата по умолчанию — сегодня (локальная дата в формате YYYY-MM-DD для input[type=date])
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -660,9 +693,11 @@ function resetAddTradeForm() {
   const dd = String(today.getDate()).padStart(2, '0');
   document.getElementById('add-trade-date').value = `${yyyy}-${mm}-${dd}`;
 
-  document.getElementById('add-symbol').value = '';
   document.getElementById('add-result-r').value = '';
   document.getElementById('add-note').value = '';
+
+  document.getElementById('add-symbol-new-wrapper').classList.add('hidden');
+  document.getElementById('add-symbol-new-input').value = '';
 
   addTradeDirection = 'long';
   document.getElementById('add-direction-long').classList.add('active');
@@ -673,7 +708,33 @@ function resetAddTradeForm() {
 
   addTradeTags = [];
   document.querySelectorAll('.multi-tag-btn').forEach((b) => b.classList.remove('active'));
+
+  await loadFavoriteSymbolsIntoSelect();
 }
+
+async function loadFavoriteSymbolsIntoSelect() {
+  const select = document.getElementById('add-symbol-select');
+  try {
+    const data = await apiGet('/favorites');
+    select.innerHTML = data.symbols.map((s) => `<option value="${s}">${s}</option>`).join('')
+      + `<option value="__new__">+ Добавить новый тикер</option>`;
+  } catch (e) {
+    console.error('Не удалось загрузить избранные тикеры', e);
+    select.innerHTML = `<option value="__new__">+ Добавить новый тикер</option>`;
+  }
+}
+
+document.getElementById('add-symbol-select').addEventListener('change', (e) => {
+  const wrapper = document.getElementById('add-symbol-new-wrapper');
+  const input = document.getElementById('add-symbol-new-input');
+  if (e.target.value === '__new__') {
+    wrapper.classList.remove('hidden');
+    input.focus();
+  } else {
+    wrapper.classList.add('hidden');
+    input.value = '';
+  }
+});
 
 document.getElementById('add-direction-long').addEventListener('click', () => {
   addTradeDirection = 'long';
@@ -720,7 +781,10 @@ document.getElementById('add-back-btn').addEventListener('click', () => showScre
 
 document.getElementById('add-submit-btn').addEventListener('click', async () => {
   const tradeDate = document.getElementById('add-trade-date').value; // формат YYYY-MM-DD
-  const symbol = document.getElementById('add-symbol').value.trim();
+  const selectValue = document.getElementById('add-symbol-select').value;
+  const newSymbolRaw = document.getElementById('add-symbol-new-input').value.trim();
+  const isNewSymbol = selectValue === '__new__';
+  const symbol = (isNewSymbol ? newSymbolRaw : selectValue).toUpperCase();
   const resultRRaw = document.getElementById('add-result-r').value;
   const note = document.getElementById('add-note').value.trim();
 
@@ -743,6 +807,12 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
   }
 
   try {
+    if (isNewSymbol) {
+      // Новый тикер сразу попадает в избранное, чтобы в следующий раз
+      // не вводить его руками
+      await apiPost(`/favorites/${encodeURIComponent(symbol)}`, {});
+    }
+
     await apiPost('/trades', {
       asset: symbol,
       symbol: symbol,
