@@ -198,7 +198,21 @@
       <div class="outcome-toggle">
         <button type="button" class="outcome-btn win" id="add-outcome-win" data-value="win">Прибыль</button>
         <button type="button" class="outcome-btn loss" id="add-outcome-loss" data-value="loss">Убыток</button>
-        <button type="button" class="outcome-btn breakeven" id="add-outcome-breakeven" data-value="breakeven">Без убытка</button>
+        <button type="button" class="outcome-btn breakeven" id="add-outcome-breakeven" data-value="breakeven">Безубыток</button>
+      </div>
+
+      <label class="field-label">Сетап</label>
+      <div class="multi-tag-row" id="add-tags-setup">
+        <button type="button" class="multi-tag-btn" data-tag="OB+FVG">OB+FVG</button>
+        <button type="button" class="multi-tag-btn" data-tag="SMT Divergence">SMT Divergence</button>
+        <button type="button" class="multi-tag-btn" data-tag="BoS/CHoCH">BoS/CHoCH</button>
+        <button type="button" class="multi-tag-btn" data-tag="Liquidity Sweep">Liquidity Sweep</button>
+      </div>
+
+      <label class="field-label">Сессия</label>
+      <div class="multi-tag-row" id="add-tags-session">
+        <button type="button" class="multi-tag-btn" data-tag="London KZ">London KZ</button>
+        <button type="button" class="multi-tag-btn" data-tag="NY KZ">NY KZ</button>
       </div>
 
       <label class="field-label">Заметка (необязательно)</label>
@@ -215,7 +229,7 @@
     </div>
 
     <div class="section">
-      <div class="section-label">PnL по тегам</div>
+      <div class="section-label">R по сетапам и сессиям</div>
       <div class="card" id="analytics-by-tag">
         <!-- заполняется через JS -->
       </div>
@@ -225,7 +239,7 @@
       <div class="empty-state">
         <div class="empty-icon">📈</div>
         <div class="empty-title">Пока нет данных</div>
-        <div class="empty-text">Добавь сделки с тегами — аналитика появится здесь</div>
+        <div class="empty-text">Добавь сделку с сетапом или сессией — здесь появится R по каждому из них</div>
       </div>
     </div>
   </div>

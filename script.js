@@ -94,7 +94,7 @@ function outcomeClass(outcome) {
 function outcomeLabel(outcome) {
   if (outcome === 'win') return 'прибыль';
   if (outcome === 'loss') return 'убыток';
-  if (outcome === 'breakeven') return 'без убытка';
+  if (outcome === 'breakeven') return 'безубыток';
   return '—';
 }
 
@@ -476,6 +476,7 @@ async function renderJournalSubfilter() {
       <option value="">Все сделки</option>
       <option value="win">Только прибыльные</option>
       <option value="loss">Только убыточные</option>
+      <option value="breakeven">Только безубыточные</option>
     `;
   } else if (journalView === 'year') {
     try {
@@ -581,14 +582,40 @@ function renderDetailTags(activeTags) {
     });
   });
 
-  document.getElementById('detail-add-tag').addEventListener('click', async () => {
-    const tag = prompt('Название тега:');
-    if (!tag) return;
-    const newTags = [...activeTags, tag];
-    await apiPatch(`/trades/${currentTradeId}`, { tags: newTags });
-    activeTags = newTags;
-    renderDetailTags(activeTags);
+  document.getElementById('detail-add-tag').addEventListener('click', () => {
+    showAddTagInput(activeTags);
   });
+}
+
+function showAddTagInput(activeTags) {
+  const container = document.getElementById('detail-tags');
+  const addBtn = document.getElementById('detail-add-tag');
+
+  // Заменяем кнопку "+ тег" на инлайн-инпут прямо на её месте —
+  // без prompt()/confirm(), которые Telegram Mini App может блокировать
+  const wrapper = document.createElement('span');
+  wrapper.className = 'tag-input-wrapper';
+  wrapper.innerHTML = `<input type="text" id="new-tag-input" class="tag-input" placeholder="Название тега" />`;
+  addBtn.replaceWith(wrapper);
+
+  const input = document.getElementById('new-tag-input');
+  input.focus();
+
+  const commit = async () => {
+    const value = input.value.trim();
+    if (value) {
+      const newTags = [...activeTags, value];
+      await apiPatch(`/trades/${currentTradeId}`, { tags: newTags });
+      activeTags = newTags;
+    }
+    renderDetailTags(activeTags);
+  };
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') commit();
+    if (e.key === 'Escape') renderDetailTags(activeTags);
+  });
+  input.addEventListener('blur', commit);
 }
 
 document.getElementById('detail-back-btn').addEventListener('click', () => showScreen('journal'));
@@ -623,6 +650,7 @@ document.getElementById('detail-delete-btn').addEventListener('click', async () 
 
 let addTradeDirection = 'long';
 let addTradeOutcome = null; // 'win' | 'loss' | 'breakeven' | null
+let addTradeTags = [];      // выбранные теги сетапа/сессии
 
 function resetAddTradeForm() {
   // Дата по умолчанию — сегодня (локальная дата в формате YYYY-MM-DD для input[type=date])
@@ -642,6 +670,9 @@ function resetAddTradeForm() {
 
   addTradeOutcome = null;
   document.querySelectorAll('.outcome-btn').forEach((b) => b.classList.remove('active'));
+
+  addTradeTags = [];
+  document.querySelectorAll('.multi-tag-btn').forEach((b) => b.classList.remove('active'));
 }
 
 document.getElementById('add-direction-long').addEventListener('click', () => {
@@ -665,6 +696,21 @@ document.getElementById('add-direction-short').addEventListener('click', () => {
       addTradeOutcome = null; // повторный клик снимает выбор
     } else {
       addTradeOutcome = value;
+      btn.classList.add('active');
+    }
+  });
+});
+
+// Сетап и сессия — мультивыбор (можно выбрать несколько тегов одновременно)
+document.querySelectorAll('.multi-tag-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const tag = btn.dataset.tag;
+    const isActive = btn.classList.contains('active');
+    if (isActive) {
+      addTradeTags = addTradeTags.filter((t) => t !== tag);
+      btn.classList.remove('active');
+    } else {
+      addTradeTags.push(tag);
       btn.classList.add('active');
     }
   });
@@ -706,7 +752,7 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
       trade_date: `${tradeDate}T12:00:00`,
       source: 'manual',
       note: note || null,
-      tags: [],
+      tags: addTradeTags,
     });
 
     tg?.HapticFeedback?.notificationOccurred('success');
@@ -734,16 +780,16 @@ async function loadAnalytics() {
     container.parentElement.classList.remove('hidden');
     emptyEl.classList.add('hidden');
 
-    const maxAbs = Math.max(...data.by_tag.map((t) => Math.abs(t.pnl_usd)), 1);
+    const maxAbs = Math.max(...data.by_tag.map((t) => Math.abs(t.total_r)), 1);
 
     container.innerHTML = data.by_tag.map((t) => {
-      const widthPct = Math.round((Math.abs(t.pnl_usd) / maxAbs) * 100);
-      const isPositive = t.pnl_usd >= 0;
+      const widthPct = Math.round((Math.abs(t.total_r) / maxAbs) * 100);
+      const isPositive = t.total_r >= 0;
       return `
         <div class="bar-stat">
           <div class="bar-stat-top">
-            <span class="bar-stat-name">${t.tag}</span>
-            <span class="mono ${pnlClass(t.pnl_usd)}">${fmtUsd(t.pnl_usd)}</span>
+            <span class="bar-stat-name">${t.tag} <span class="text-muted">· ${t.count} сделок</span></span>
+            <span class="mono ${pnlClass(t.total_r)}">${fmtR(t.total_r)}</span>
           </div>
           <div class="bar-track">
             <div class="bar-fill ${isPositive ? 'positive' : 'negative'}" style="width: ${widthPct}%;"></div>
