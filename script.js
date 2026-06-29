@@ -687,12 +687,21 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
     return;
   }
 
+  // R вводится как положительное число — знак берём из выбранного результата,
+  // а не из самого числа: убыток всегда уходит в минус, без убытка — всегда 0.
+  let resultR = resultRRaw ? Math.abs(parseFloat(resultRRaw)) : null;
+  if (resultR !== null) {
+    if (addTradeOutcome === 'loss') resultR = -resultR;
+    else if (addTradeOutcome === 'breakeven') resultR = 0;
+    // 'win' или не выбрано — оставляем положительным как есть
+  }
+
   try {
     await apiPost('/trades', {
       asset: symbol,
       symbol: symbol,
       direction: addTradeDirection,
-      result_r: resultRRaw ? parseFloat(resultRRaw) : null,
+      result_r: resultR,
       outcome: addTradeOutcome,
       trade_date: `${tradeDate}T12:00:00`,
       source: 'manual',
