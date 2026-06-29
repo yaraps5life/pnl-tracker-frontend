@@ -284,79 +284,199 @@ function attachTradeRowHandlers(containerId) {
 
 // ---------- Журнал сделок ----------
 
-let journalFilters = { result: '', source: '', search: '' };
+const MONTH_NAMES = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+let journalView = 'all';          // all | month | year | winrate | symbol
+let journalSubfilter = '';        // значение второго селектора (месяц/год/тикер/результат)
+let journalSortColumn = 'trade_date';
+let journalSortDir = 'desc';      // 'asc' | 'desc'
+let journalRowsCache = [];        // последние загруженные строки — пересортировываем без нового запроса
 
 async function loadJournal() {
-  const listEl = document.getElementById('journal-list');
+  const tableBody = document.getElementById('journal-table-body');
+  const tableWrap = document.getElementById('journal-table-wrap');
   const emptyEl = document.getElementById('journal-empty-state');
 
   try {
     const params = new URLSearchParams();
-    if (journalFilters.result) params.set('result', journalFilters.result);
-    if (journalFilters.source) params.set('source', journalFilters.source);
+
+    if (journalView === 'month' && journalSubfilter) {
+      const [year, month] = journalSubfilter.split('-');
+      params.set('year', year);
+      params.set('month', month);
+    } else if (journalView === 'year' && journalSubfilter) {
+      params.set('year', journalSubfilter);
+    } else if (journalView === 'winrate' && journalSubfilter) {
+      params.set('result', journalSubfilter); // 'win' или 'loss'
+    } else if (journalView === 'symbol' && journalSubfilter) {
+      params.set('symbol', journalSubfilter);
+    }
 
     const data = await apiGet(`/trades?${params.toString()}`);
-    let trades = data.trades;
+    journalRowsCache = data.trades;
 
-    if (journalFilters.search) {
-      const q = journalFilters.search.toLowerCase();
-      trades = trades.filter((t) =>
-        t.symbol?.toLowerCase().includes(q) ||
-        (t.tags || []).some((tag) => tag.toLowerCase().includes(q))
-      );
-    }
-
-    if (trades.length === 0) {
-      listEl.innerHTML = '';
-      emptyEl.classList.remove('hidden');
-      return;
-    }
-    emptyEl.classList.add('hidden');
-
-    // Группируем по дате
-    const groups = {};
-    trades.forEach((t) => {
-      const dateKey = (t.created_at || '').split(' ')[0] || 'Без даты';
-      if (!groups[dateKey]) groups[dateKey] = [];
-      groups[dateKey].push(t);
-    });
-
-    listEl.innerHTML = Object.entries(groups).map(([date, items]) => `
-      <div class="date-group-label">${date}</div>
-      <div class="card" style="padding: 4px 16px;">
-        ${items.map(renderTradeRow).join('')}
-      </div>
-    `).join('');
-
-    attachTradeRowHandlers('journal-list');
+    renderJournalTable();
   } catch (e) {
     console.error('Не удалось загрузить журнал', e);
   }
 }
 
-document.querySelectorAll('[data-filter-result]').forEach((chip) => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('[data-filter-result]').forEach((c) => c.classList.remove('active'));
-    chip.classList.add('active');
-    journalFilters.result = chip.dataset.filterResult;
-    journalFilters.source = '';
-    document.querySelectorAll('[data-filter-source]').forEach((c) => c.classList.remove('active'));
+function renderJournalTable() {
+  const tableBody = document.getElementById('journal-table-body');
+  const tableWrap = document.getElementById('journal-table-wrap');
+  const emptyEl = document.getElementById('journal-empty-state');
+
+  let rows = [...journalRowsCache];
+
+  // Сортировка — по выбранной колонке и направлению
+  rows.sort((a, b) => {
+    let va, vb;
+    if (journalSortColumn === 'trade_date') {
+      va = a.trade_date || a.created_at || '';
+      vb = b.trade_date || b.created_at || '';
+    } else if (journalSortColumn === 'result') {
+      va = a.pnl_usd ?? 0;
+      vb = b.pnl_usd ?? 0;
+    } else {
+      va = a[journalSortColumn] ?? '';
+      vb = b[journalSortColumn] ?? '';
+    }
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return journalSortDir === 'asc' ? -1 : 1;
+    if (va > vb) return journalSortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  if (rows.length === 0) {
+    tableWrap.classList.add('hidden');
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+  tableWrap.classList.remove('hidden');
+  emptyEl.classList.add('hidden');
+
+  tableBody.innerHTML = rows.map(renderTableRow).join('');
+
+  tableBody.querySelectorAll('tr').forEach((row) => {
+    row.addEventListener('click', () => openTradeDetail(row.dataset.tradeId));
+  });
+
+  // Обновляем визуальные стрелки сортировки в заголовках
+  document.querySelectorAll('#journal-table thead th').forEach((th) => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+    if (th.dataset.sort === journalSortColumn) {
+      th.classList.add(journalSortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+    }
+  });
+}
+
+function renderTableRow(t) {
+  const isLong = t.direction === 'long';
+  const dateStr = (t.trade_date || t.created_at || '—').split(' ')[0];
+
+  let resultClass = 'neutral';
+  let resultLabel = '—';
+  if (t.pnl_usd != null) {
+    if (t.pnl_usd > 0) { resultClass = 'win'; resultLabel = 'прибыль'; }
+    else if (t.pnl_usd < 0) { resultClass = 'loss'; resultLabel = 'убыток'; }
+    else { resultLabel = 'ноль'; }
+  }
+
+  return `
+    <tr data-trade-id="${t.id}">
+      <td class="cell-date">${dateStr}</td>
+      <td class="cell-symbol">${t.symbol}</td>
+      <td><span class="cell-direction ${isLong ? 'long' : 'short'}">${isLong ? 'лонг' : 'шорт'}</span></td>
+      <td class="cell-r">${fmtR(t.result_r)}</td>
+      <td><span class="cell-result ${resultClass}"><span class="result-dot"></span>${resultLabel}</span></td>
+    </tr>
+  `;
+}
+
+// Клик по заголовку таблицы — сортировка
+document.querySelectorAll('#journal-table thead th').forEach((th) => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (journalSortColumn === col) {
+      journalSortDir = journalSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      journalSortColumn = col;
+      journalSortDir = 'desc';
+    }
+    renderJournalTable();
+  });
+});
+
+// Переключение вкладок-срезов
+document.querySelectorAll('#journal-tabs .tab-chip').forEach((tab) => {
+  tab.addEventListener('click', async () => {
+    document.querySelectorAll('#journal-tabs .tab-chip').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    journalView = tab.dataset.view;
+    journalSubfilter = '';
+    await renderJournalSubfilter();
     loadJournal();
   });
 });
 
-document.querySelectorAll('[data-filter-source]').forEach((chip) => {
-  chip.addEventListener('click', () => {
-    const isActive = chip.classList.contains('active');
-    document.querySelectorAll('[data-filter-source]').forEach((c) => c.classList.remove('active'));
-    journalFilters.source = isActive ? '' : chip.dataset.filterSource;
-    chip.classList.toggle('active', !isActive);
-    loadJournal();
-  });
-});
+async function renderJournalSubfilter() {
+  const wrap = document.getElementById('journal-subfilter');
+  const select = document.getElementById('journal-subfilter-select');
 
-document.getElementById('journal-search').addEventListener('input', (e) => {
-  journalFilters.search = e.target.value;
+  if (journalView === 'all') {
+    wrap.classList.add('hidden');
+    return;
+  }
+
+  wrap.classList.remove('hidden');
+
+  if (journalView === 'winrate') {
+    select.innerHTML = `
+      <option value="">Все сделки</option>
+      <option value="win">Только прибыльные</option>
+      <option value="loss">Только убыточные</option>
+    `;
+  } else if (journalView === 'year') {
+    try {
+      const data = await apiGet('/trades/years');
+      select.innerHTML = data.years.map((y) => `<option value="${y}">${y}</option>`).join('');
+      journalSubfilter = data.years[0] ? String(data.years[0]) : '';
+    } catch (e) {
+      console.error('Не удалось загрузить список годов', e);
+    }
+  } else if (journalView === 'month') {
+    try {
+      const data = await apiGet('/trades/years');
+      const options = [];
+      data.years.forEach((y) => {
+        for (let m = 12; m >= 1; m--) {
+          options.push(`<option value="${y}-${m}">${MONTH_NAMES[m - 1]} ${y}</option>`);
+        }
+      });
+      select.innerHTML = options.join('');
+      if (data.years[0]) {
+        const now = new Date();
+        journalSubfilter = `${data.years[0]}-${now.getMonth() + 1}`;
+        select.value = journalSubfilter;
+      }
+    } catch (e) {
+      console.error('Не удалось загрузить список месяцев', e);
+    }
+  } else if (journalView === 'symbol') {
+    try {
+      const data = await apiGet('/trades/symbols');
+      select.innerHTML = data.symbols.map((s) => `<option value="${s}">${s}</option>`).join('');
+      journalSubfilter = data.symbols[0] || '';
+    } catch (e) {
+      console.error('Не удалось загрузить список тикеров', e);
+    }
+  }
+}
+
+document.getElementById('journal-subfilter-select').addEventListener('change', (e) => {
+  journalSubfilter = e.target.value;
   loadJournal();
 });
 

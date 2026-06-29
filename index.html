@@ -81,22 +81,34 @@
       <button class="icon-btn" id="journal-add-btn">＋</button>
     </div>
 
-    <div class="filter-row">
-      <button class="chip active" data-filter-result="">Все</button>
-      <button class="chip" data-filter-result="win">Прибыльные</button>
-      <button class="chip" data-filter-result="loss">Убыточные</button>
-      <button class="chip" data-filter-source="auto">Авто</button>
+    <div class="tabs-row" id="journal-tabs">
+      <button class="tab-chip active" data-view="all">Общая</button>
+      <button class="tab-chip" data-view="month">По месяцам</button>
+      <button class="tab-chip" data-view="year">По годам</button>
+      <button class="tab-chip" data-view="winrate">По винрейту</button>
+      <button class="tab-chip" data-view="symbol">По тикерам</button>
     </div>
 
-    <div class="search-row">
-      <div class="search-box">
-        <span>🔍</span>
-        <input type="text" id="journal-search" placeholder="Символ или тег">
-      </div>
+    <!-- Селектор периода/значения — появляется только для нужных вкладок -->
+    <div class="section hidden" id="journal-subfilter" style="margin-bottom: 8px;">
+      <select id="journal-subfilter-select"></select>
     </div>
 
-    <div class="section" id="journal-list">
-      <!-- заполняется через JS -->
+    <div class="section" id="journal-table-wrap" style="padding: 0 12px;">
+      <table class="trades-table" id="journal-table">
+        <thead>
+          <tr>
+            <th data-sort="trade_date">Дата</th>
+            <th data-sort="symbol">Тикер</th>
+            <th data-sort="direction">Направл.</th>
+            <th data-sort="result_r">R</th>
+            <th data-sort="result">Винрейт</th>
+          </tr>
+        </thead>
+        <tbody id="journal-table-body">
+          <!-- заполняется через JS -->
+        </tbody>
+      </table>
     </div>
 
     <div class="section hidden" id="journal-empty-state">
