@@ -13,6 +13,44 @@ if (tg) {
   tg.expand();
 }
 
+// ---------- Тема (тёмная/светлая/авто) ----------
+
+const THEME_STORAGE_KEY = 'pnl_theme_mode'; // 'auto' | 'light' | 'dark'
+
+function resolveTheme(mode) {
+  if (mode === 'light' || mode === 'dark') return mode;
+  // авто — сначала смотрим тему хоста (Telegram), иначе системную тему ОС
+  if (tg?.colorScheme === 'light' || tg?.colorScheme === 'dark') return tg.colorScheme;
+  return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function getThemeMode() {
+  return localStorage.getItem(THEME_STORAGE_KEY) || 'auto';
+}
+
+function applyTheme(mode) {
+  document.documentElement.dataset.theme = resolveTheme(mode);
+  document.querySelectorAll('.theme-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.theme === mode);
+  });
+}
+
+function setThemeMode(mode) {
+  localStorage.setItem(THEME_STORAGE_KEY, mode);
+  applyTheme(mode);
+}
+
+applyTheme(getThemeMode());
+
+document.querySelectorAll('.theme-btn').forEach((btn) => {
+  btn.addEventListener('click', () => setThemeMode(btn.dataset.theme));
+});
+
+// В авто-режиме реагируем на смену темы в самом Telegram, пока апп открыт
+tg?.onEvent?.('themeChanged', () => {
+  if (getThemeMode() === 'auto') applyTheme('auto');
+});
+
 // initData передаётся как есть на бэкенд — он сам её проверит (HMAC-SHA256)
 function getAuthHeader() {
   const initData = tg?.initData || '';
@@ -157,7 +195,7 @@ function showScreen(name) {
   if (name === 'journal') loadJournal();
   if (name === 'analytics') loadAnalytics();
   if (name === 'settings') loadSettings();
-  if (name === 'add-trade') resetAddTradeForm();
+  if (name === 'add-trade' && !editingTradeId) resetAddTradeForm();
 }
 
 document.querySelectorAll('.tab-item').forEach((item) => {
@@ -525,6 +563,7 @@ document.getElementById('journal-add-btn').addEventListener('click', () => showS
 // ---------- Деталь сделки ----------
 
 let currentTradeId = null;
+let currentTrade = null;
 let availableTags = [];
 
 async function openTradeDetail(tradeId) {
@@ -533,6 +572,7 @@ async function openTradeDetail(tradeId) {
 
   try {
     const t = await apiGet(`/trades/${tradeId}`);
+    currentTrade = t;
     const tagsData = await apiGet('/tags');
     availableTags = tagsData.tags;
 
@@ -575,6 +615,10 @@ async function updateFavoriteStar(symbol) {
     console.error('Не удалось загрузить избранное', e);
   }
 }
+
+document.getElementById('detail-edit-btn').addEventListener('click', () => {
+  if (currentTrade) openEditTrade(currentTrade);
+});
 
 document.getElementById('detail-favorite-btn').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
@@ -685,7 +729,67 @@ let addTradeDirection = 'long';
 let addTradeOutcome = null; // 'win' | 'loss' | 'breakeven' | null
 let addTradeTags = [];      // выбранные теги сетапа/сессии
 
+// Если editingTradeId не null — форма работает в режиме редактирования
+// существующей сделки (PATCH), а не добавления новой (POST)
+let editingTradeId = null;
+
+function openEditTrade(trade) {
+  editingTradeId = trade.id;
+  showScreen('add-trade');
+  fillAddTradeForm(trade);
+}
+
+async function fillAddTradeForm(trade) {
+  await loadFavoriteSymbolsIntoSelect();
+
+  const select = document.getElementById('add-symbol-select');
+  const wrapper = document.getElementById('add-symbol-new-wrapper');
+  const newInput = document.getElementById('add-symbol-new-input');
+
+  // Если тикер сделки не в избранном — добавляем его как опцию вручную,
+  // чтобы форма показала текущее значение, а не первый попавшийся тикер
+  const hasOption = Array.from(select.options).some((o) => o.value === trade.symbol);
+  if (!hasOption) {
+    const opt = document.createElement('option');
+    opt.value = trade.symbol;
+    opt.textContent = trade.symbol;
+    select.insertBefore(opt, select.firstChild);
+  }
+  select.value = trade.symbol;
+  wrapper.classList.add('hidden');
+  newInput.value = '';
+
+  document.getElementById('add-trade-date').value = (trade.trade_date || '').slice(0, 10);
+
+  addTradeDirection = trade.direction === 'short' ? 'short' : 'long';
+  document.getElementById('add-direction-long').classList.toggle('active', addTradeDirection === 'long');
+  document.getElementById('add-direction-short').classList.toggle('active', addTradeDirection === 'short');
+
+  addTradeOutcome = trade.outcome || null;
+  document.querySelectorAll('.outcome-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.value === addTradeOutcome);
+  });
+
+  document.getElementById('add-result-r').value =
+    (trade.result_r === null || trade.result_r === undefined) ? '' : Math.abs(trade.result_r);
+
+  document.getElementById('add-note').value = trade.note || '';
+
+  // Полный список тегов сделки сохраняем как есть (включая теги, для которых
+  // нет готовой кнопки) — кнопки ниже лишь подсвечивают совпадения и переключают их
+  addTradeTags = [...(trade.tags || [])];
+  document.querySelectorAll('.multi-tag-btn').forEach((b) => {
+    b.classList.toggle('active', addTradeTags.includes(b.dataset.tag));
+  });
+
+  document.getElementById('add-trade-title').textContent = 'Редактировать сделку';
+  document.getElementById('add-submit-btn').textContent = 'Сохранить изменения';
+}
+
 async function resetAddTradeForm() {
+  document.getElementById('add-trade-title').textContent = 'Новая сделка';
+  document.getElementById('add-submit-btn').textContent = 'Добавить сделку';
+
   // Дата по умолчанию — сегодня (локальная дата в формате YYYY-MM-DD для input[type=date])
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -777,7 +881,15 @@ document.querySelectorAll('.multi-tag-btn').forEach((btn) => {
   });
 });
 
-document.getElementById('add-back-btn').addEventListener('click', () => showScreen('dashboard'));
+document.getElementById('add-back-btn').addEventListener('click', () => {
+  if (editingTradeId) {
+    const tradeId = editingTradeId;
+    editingTradeId = null;
+    openTradeDetail(tradeId);
+  } else {
+    showScreen('dashboard');
+  }
+});
 
 document.getElementById('add-submit-btn').addEventListener('click', async () => {
   const tradeDate = document.getElementById('add-trade-date').value; // формат YYYY-MM-DD
@@ -806,31 +918,43 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
     // 'win' или не выбрано — оставляем положительным как есть
   }
 
+  const payload = {
+    asset: symbol,
+    symbol: symbol,
+    direction: addTradeDirection,
+    result_r: resultR,
+    outcome: addTradeOutcome,
+    trade_date: `${tradeDate}T12:00:00`,
+    note: note || null,
+    tags: addTradeTags,
+  };
+
   try {
-    if (isNewSymbol) {
-      // Новый тикер сразу попадает в избранное, чтобы в следующий раз
-      // не вводить его руками
-      await apiPost(`/favorites/${encodeURIComponent(symbol)}`, {});
+    if (editingTradeId) {
+      // Режим редактирования — отправляем изменения существующей сделки,
+      // source не трогаем, чтобы не превратить авто-сделку в ручную
+      await apiPatch(`/trades/${editingTradeId}`, payload);
+      tg?.HapticFeedback?.notificationOccurred('success');
+      const tradeId = editingTradeId;
+      editingTradeId = null;
+      resetAddTradeForm();
+      await openTradeDetail(tradeId);
+    } else {
+      if (isNewSymbol) {
+        // Новый тикер сразу попадает в избранное, чтобы в следующий раз
+        // не вводить его руками
+        await apiPost(`/favorites/${encodeURIComponent(symbol)}`, {});
+      }
+      await apiPost('/trades', { ...payload, source: 'manual' });
+      tg?.HapticFeedback?.notificationOccurred('success');
+      resetAddTradeForm();
+      showScreen('dashboard');
     }
-
-    await apiPost('/trades', {
-      asset: symbol,
-      symbol: symbol,
-      direction: addTradeDirection,
-      result_r: resultR,
-      outcome: addTradeOutcome,
-      trade_date: `${tradeDate}T12:00:00`,
-      source: 'manual',
-      note: note || null,
-      tags: addTradeTags,
-    });
-
-    tg?.HapticFeedback?.notificationOccurred('success');
-    resetAddTradeForm();
-    showScreen('dashboard');
   } catch (e) {
-    console.error('Не удалось добавить сделку', e);
-    alert('Не удалось добавить сделку. Проверь соединение с бэкендом.');
+    console.error(editingTradeId ? 'Не удалось сохранить изменения' : 'Не удалось добавить сделку', e);
+    alert(editingTradeId
+      ? 'Не удалось сохранить изменения. Проверь соединение с бэкендом.'
+      : 'Не удалось добавить сделку. Проверь соединение с бэкендом.');
   }
 });
 

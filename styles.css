@@ -34,6 +34,44 @@
   --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 }
 
+/* Светлая тема — те же переменные, другие значения.
+   Текстовые акценты (success/danger/accent/warning) затемнены
+   относительно тёмной темы, чтобы держать контраст на белом фоне;
+   *-bg остаются лёгкими подложками под эти цвета. */
+[data-theme="light"] {
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --surface-2: #F0F1F4;
+  --surface-3: #E9EBEF;
+  --border: #E2E4E9;
+  --border-soft: rgba(0, 0, 0, 0.04);
+
+  --text: #1A1D23;
+  --text-secondary: #5B6270;
+  --text-muted: #8B92A0;
+  --text-faint: #A4ABB8;
+
+  --success: #1F9D6B;
+  --success-bg: rgba(31, 157, 107, 0.10);
+  --danger: #C9362E;
+  --danger-bg: rgba(201, 54, 46, 0.08);
+  --accent: #3E6FD9;
+  --accent-light: #5B8DEF;
+  --accent-bg: rgba(62, 111, 217, 0.10);
+  --warning: #B97A1D;
+  --warning-bg: rgba(185, 122, 29, 0.10);
+}
+
+html {
+  transition: background-color 0.15s ease;
+}
+
+body,
+#app,
+.screen {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -712,6 +750,33 @@ label.field-label:first-child { margin-top: 0; }
   background: var(--surface-3, var(--surface-2));
   color: var(--text);
   border-color: var(--text-muted);
+}
+
+/* ============ Переключатель темы ============ */
+
+.theme-switch {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.theme-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.theme-btn.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ============ Мультивыбор тегов (Сетап / Сессия) в форме сделки ============ */

@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>PnL Tracker</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+  // Применяем тему максимально рано, чтобы избежать мигания
+  // неправильным фоном при первой отрисовке
+  (function () {
+    try {
+      var mode = localStorage.getItem('pnl_theme_mode') || 'auto';
+      var resolved = mode;
+      if (mode === 'auto') {
+        var tgScheme = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.colorScheme;
+        resolved = tgScheme === 'light' || tgScheme === 'dark'
+          ? tgScheme
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      }
+      document.documentElement.dataset.theme = resolved;
+    } catch (e) {}
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -124,6 +141,7 @@
     <div class="detail-header">
       <button class="icon-btn" id="detail-back-btn">←</button>
       <h1 id="detail-symbol">—</h1>
+      <button class="icon-btn" id="detail-edit-btn" title="Редактировать сделку">✏️</button>
       <button class="icon-btn" id="detail-favorite-btn" title="Добавить в избранное">☆</button>
       <span class="source-badge" id="detail-source-badge">—</span>
     </div>
@@ -175,7 +193,7 @@
     <div class="detail-header" style="align-items: flex-start;">
       <button class="icon-btn" id="add-back-btn">←</button>
       <div style="flex: 1;">
-        <h1 style="margin-bottom: 4px;">Новая сделка</h1>
+        <h1 style="margin-bottom: 4px;" id="add-trade-title">Новая сделка</h1>
         <input type="date" id="add-trade-date" class="date-inline-input">
       </div>
       <span style="width: 32px;"></span>
@@ -293,6 +311,13 @@
           <div class="settings-name" id="settings-name">—</div>
           <div class="settings-handle" id="settings-handle">—</div>
         </div>
+      </div>
+
+      <div class="section-label">Внешний вид</div>
+      <div class="theme-switch" id="theme-switch">
+        <button class="theme-btn" data-theme="auto">Авто</button>
+        <button class="theme-btn" data-theme="light">Светлая</button>
+        <button class="theme-btn" data-theme="dark">Тёмная</button>
       </div>
 
       <div class="section-label">Данные</div>
