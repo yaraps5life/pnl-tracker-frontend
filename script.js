@@ -794,6 +794,9 @@ async function fillAddTradeForm(trade) {
   newInput.value = '';
 
   document.getElementById('add-trade-date').value = (trade.trade_date || '').slice(0, 10);
+  // Время сделки — если в дате его нет (старые записи без времени), оставляем как было: 12:00
+  const timePart = (trade.trade_date || '').slice(11, 16);
+  document.getElementById('add-trade-time').value = timePart || '12:00';
 
   addTradeDirection = trade.direction === 'short' ? 'short' : 'long';
   document.getElementById('add-direction-long').classList.toggle('active', addTradeDirection === 'long');
@@ -818,21 +821,55 @@ async function fillAddTradeForm(trade) {
 
   document.getElementById('add-trade-title').textContent = 'Редактировать сделку';
   document.getElementById('add-submit-btn').textContent = 'Сохранить изменения';
+
+  document.getElementById('add-entry-price').value = trade.entry_price ?? '';
+  document.getElementById('add-exit-price').value = trade.exit_price ?? '';
+  document.getElementById('add-size').value = trade.size ?? '';
+  document.getElementById('add-leverage').value = trade.leverage ?? '';
+
+  // Если хотя бы одно из полей деталей заполнено — сразу раскрываем блок,
+  // чтобы при редактировании не приходилось искать, куда делись данные
+  const hasDetails = trade.entry_price != null || trade.exit_price != null
+    || trade.size != null || trade.leverage != null;
+  setDetailsToggle(hasDetails);
 }
+
+function setDetailsToggle(open) {
+  const btn = document.getElementById('add-details-toggle');
+  const fields = document.getElementById('add-details-fields');
+  btn.classList.toggle('open', open);
+  fields.classList.toggle('hidden', !open);
+}
+
+document.getElementById('add-details-toggle').addEventListener('click', () => {
+  const isOpen = document.getElementById('add-details-toggle').classList.contains('open');
+  setDetailsToggle(!isOpen);
+});
 
 async function resetAddTradeForm() {
   document.getElementById('add-trade-title').textContent = 'Новая сделка';
   document.getElementById('add-submit-btn').textContent = 'Добавить сделку';
 
-  // Дата по умолчанию — сегодня (локальная дата в формате YYYY-MM-DD для input[type=date])
+  // Дата и время по умолчанию — сейчас, по локальному времени устройства.
+  // В Telegram Mini App это и есть время пользователя — приложение открыто
+  // на его телефоне, отдельного API часового пояса Telegram не даёт.
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const dd = String(today.getDate()).padStart(2, '0');
   document.getElementById('add-trade-date').value = `${yyyy}-${mm}-${dd}`;
+  const hh = String(today.getHours()).padStart(2, '0');
+  const min = String(today.getMinutes()).padStart(2, '0');
+  document.getElementById('add-trade-time').value = `${hh}:${min}`;
 
   document.getElementById('add-result-r').value = '';
   document.getElementById('add-note').value = '';
+
+  document.getElementById('add-entry-price').value = '';
+  document.getElementById('add-exit-price').value = '';
+  document.getElementById('add-size').value = '';
+  document.getElementById('add-leverage').value = '';
+  setDetailsToggle(false);
 
   document.getElementById('add-symbol-new-wrapper').classList.add('hidden');
   document.getElementById('add-symbol-new-input').value = '';
@@ -927,12 +964,18 @@ document.getElementById('add-back-btn').addEventListener('click', () => {
 
 document.getElementById('add-submit-btn').addEventListener('click', async () => {
   const tradeDate = document.getElementById('add-trade-date').value; // формат YYYY-MM-DD
+  const tradeTime = document.getElementById('add-trade-time').value || '12:00'; // формат HH:MM
   const selectValue = document.getElementById('add-symbol-select').value;
   const newSymbolRaw = document.getElementById('add-symbol-new-input').value.trim();
   const isNewSymbol = selectValue === '__new__';
   const symbol = (isNewSymbol ? newSymbolRaw : selectValue).toUpperCase();
   const resultRRaw = document.getElementById('add-result-r').value;
   const note = document.getElementById('add-note').value.trim();
+
+  const entryRaw = document.getElementById('add-entry-price').value;
+  const exitRaw = document.getElementById('add-exit-price').value;
+  const sizeRaw = document.getElementById('add-size').value;
+  const leverageRaw = document.getElementById('add-leverage').value;
 
   if (!symbol) {
     alert('Укажи актив');
@@ -958,9 +1001,13 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
     direction: addTradeDirection,
     result_r: resultR,
     outcome: addTradeOutcome,
-    trade_date: `${tradeDate}T12:00:00`,
+    trade_date: `${tradeDate}T${tradeTime}:00`,
     note: note || null,
     tags: addTradeTags,
+    entry_price: entryRaw ? parseFloat(entryRaw) : null,
+    exit_price: exitRaw ? parseFloat(exitRaw) : null,
+    size: sizeRaw ? parseFloat(sizeRaw) : null,
+    leverage: leverageRaw ? parseFloat(leverageRaw) : null,
   };
 
   try {

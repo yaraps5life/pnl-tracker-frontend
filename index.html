@@ -203,7 +203,10 @@
       <button class="icon-btn" id="add-back-btn">←</button>
       <div style="flex: 1;">
         <h1 style="margin-bottom: 4px;" id="add-trade-title">Новая сделка</h1>
-        <input type="date" id="add-trade-date" class="date-inline-input">
+        <div class="date-time-row">
+          <input type="date" id="add-trade-date" class="date-inline-input">
+          <input type="time" id="add-trade-time" class="date-inline-input">
+        </div>
       </div>
       <span style="width: 32px;"></span>
     </div>
@@ -244,6 +247,30 @@
       <div class="multi-tag-row" id="add-tags-session">
         <button type="button" class="multi-tag-btn" data-tag="London KZ">London KZ</button>
         <button type="button" class="multi-tag-btn" data-tag="NY KZ">NY KZ</button>
+      </div>
+
+      <button type="button" class="details-toggle" id="add-details-toggle">
+        <span class="details-toggle-icon">＋</span>
+        <span>Детали сделки (вход, выход, размер, плечо)</span>
+      </button>
+
+      <div class="hidden" id="add-details-fields">
+        <div>
+          <label class="field-label" style="margin-top: 0;">Вход</label>
+          <input type="number" class="mono-input" id="add-entry-price" placeholder="—" step="any">
+        </div>
+        <div>
+          <label class="field-label" style="margin-top: 0;">Выход</label>
+          <input type="number" class="mono-input" id="add-exit-price" placeholder="—" step="any">
+        </div>
+        <div>
+          <label class="field-label" style="margin-top: 0;">Размер</label>
+          <input type="number" class="mono-input" id="add-size" placeholder="—" step="any">
+        </div>
+        <div>
+          <label class="field-label" style="margin-top: 0;">Leverage</label>
+          <input type="number" class="mono-input" id="add-leverage" placeholder="—" step="1" min="1">
+        </div>
       </div>
 
       <label class="field-label">Заметка (необязательно)</label>

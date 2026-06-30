@@ -710,6 +710,61 @@ label.field-label:first-child { margin-top: 0; }
   color: var(--text);
 }
 
+.date-time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============ Сворачиваемый блок "Детали сделки" в форме ============ */
+
+.details-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 18px;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-align: left;
+}
+
+.details-toggle:hover {
+  color: var(--text);
+}
+
+.details-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.details-toggle.open .details-toggle-icon {
+  transform: rotate(45deg);
+}
+
+#add-details-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 10px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
 /* ============ Переключатель Long/Short ============ */
 
 .direction-toggle {
