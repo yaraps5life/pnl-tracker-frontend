@@ -488,6 +488,34 @@ body {
   font-weight: 600;
 }
 
+/* ============ Сводка по периоду (журнал) ============ */
+
+#journal-summary-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding-top: 2px;
+  padding-bottom: 6px;
+}
+
+#journal-summary-row .journal-summary-dot {
+  color: var(--text-faint);
+}
+
+#journal-summary-winrate {
+  color: var(--text-secondary);
+}
+
+#journal-summary-rr {
+  font-weight: 600;
+}
+
+#journal-summary-rr.positive { color: var(--success); }
+#journal-summary-rr.negative { color: var(--danger); }
+
 /* ============ Таблица сделок ============ */
 
 .trades-table {

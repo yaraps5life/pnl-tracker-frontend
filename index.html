@@ -93,7 +93,7 @@
   <!-- ============ ЖУРНАЛ СДЕЛОК ============ -->
   <div class="screen" id="screen-journal">
     <div class="header">
-      <h1>Сделки</h1>
+      <h1>Журнал</h1>
       <button class="icon-btn" id="journal-add-btn">＋</button>
     </div>
 
@@ -108,6 +108,15 @@
     <!-- Селектор периода/значения — появляется только для нужных вкладок -->
     <div class="section hidden" id="journal-subfilter" style="margin-bottom: 8px;">
       <select id="journal-subfilter-select"></select>
+    </div>
+
+    <!-- Сводка по текущему отфильтрованному периоду/срезу -->
+    <div class="section" id="journal-summary-row">
+      <span id="journal-summary-count">0 сделок</span>
+      <span class="journal-summary-dot">·</span>
+      <span id="journal-summary-winrate">винрейт —</span>
+      <span class="journal-summary-dot">·</span>
+      <span id="journal-summary-rr" class="mono">R —</span>
     </div>
 
     <div class="section" id="journal-table-wrap" style="padding: 0 12px;">
@@ -343,7 +352,7 @@
     </button>
     <button class="tab-item" data-screen="journal">
       <span class="tab-icon">☰</span>
-      <span class="tab-label">Сделки</span>
+      <span class="tab-label">Журнал</span>
     </button>
     <button class="tab-item" data-screen="analytics">
       <span class="tab-icon">▲</span>

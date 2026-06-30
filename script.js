@@ -402,10 +402,44 @@ async function loadJournal() {
   }
 }
 
+// Сводка над таблицей: кол-во сделок, винрейт и суммарный R по текущему
+// отфильтрованному срезу (период/тикер/результат — что выбрано во вкладке)
+function renderJournalSummary() {
+  const rows = journalRowsCache;
+  const countEl = document.getElementById('journal-summary-count');
+  const winrateEl = document.getElementById('journal-summary-winrate');
+  const rrEl = document.getElementById('journal-summary-rr');
+
+  const total = rows.length;
+  countEl.textContent = `${total} ${tradesWord(total)}`;
+
+  // Винрейт считаем только по закрытым исходом сделкам (win/loss);
+  // безубыток не засчитывается ни в выигрыши, ни в проигрыши
+  const decided = rows.filter((t) => t.outcome === 'win' || t.outcome === 'loss');
+  const wins = decided.filter((t) => t.outcome === 'win').length;
+  winrateEl.textContent = decided.length
+    ? `винрейт ${Math.round((wins / decided.length) * 100)}%`
+    : 'винрейт —';
+
+  const totalR = rows.reduce((sum, t) => sum + (t.result_r || 0), 0);
+  rrEl.textContent = total ? fmtR(totalR) : 'R —';
+  rrEl.className = `mono ${total ? pnlClass(totalR) : ''}`;
+}
+
+function tradesWord(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'сделка';
+  if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) return 'сделки';
+  return 'сделок';
+}
+
 function renderJournalTable() {
   const tableBody = document.getElementById('journal-table-body');
   const tableWrap = document.getElementById('journal-table-wrap');
   const emptyEl = document.getElementById('journal-empty-state');
+
+  renderJournalSummary();
 
   let rows = [...journalRowsCache];
 
