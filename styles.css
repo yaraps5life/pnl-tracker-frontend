@@ -190,6 +190,55 @@ body {
   margin-bottom: 8px;
 }
 
+/* ============ Табы фильтра дашборда (Всё / М / Y / W/R) ============ */
+
+.dash-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 10px;
+}
+
+.dash-tabs {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.dash-tab {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+
+.dash-tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.dash-subfilter {
+  flex: 1;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font-body);
+  outline: none;
+}
+
 /* ============ Карточка PnL (главная на дашборде) ============ */
 
 .pnl-card {

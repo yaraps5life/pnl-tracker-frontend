@@ -39,11 +39,26 @@
   <div class="screen" id="screen-dashboard">
     <div class="header">
       <h1>Дашборд</h1>
-      <button class="icon-btn" id="dash-history-btn" title="История всех сделок">🕐</button>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button class="icon-btn" id="dash-screenshot-btn" title="Сохранить карточку">📸</button>
+        <button class="icon-btn" id="dash-history-btn" title="История всех сделок">🕐</button>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="pnl-card">
+    <!-- Табы фильтра периода -->
+    <div class="dash-filter-row">
+      <div class="dash-tabs" id="dash-tabs">
+        <button class="dash-tab active" data-view="all">Всё</button>
+        <button class="dash-tab" data-view="month">М</button>
+        <button class="dash-tab" data-view="year">Y</button>
+        <button class="dash-tab" data-view="winrate">W/R</button>
+      </div>
+      <select class="dash-subfilter hidden" id="dash-subfilter"></select>
+    </div>
+
+    <!-- Карточка — она же цель для скриншота -->
+    <div class="section" id="dash-card-section">
+      <div class="pnl-card" id="dash-pnl-card">
         <div class="pnl-card-top">
           <div class="pnl-card-label" id="dash-pnl-label">Суммарный R</div>
           <div class="pnl-mode-switch" id="dash-pnl-mode-switch">

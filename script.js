@@ -348,26 +348,31 @@ document.getElementById('dash-pnl-mode-switch').querySelectorAll('.pnl-mode-btn'
   });
 });
 
-async function loadDashboard() {
+// ---------- Дашборд: состояние фильтра ----------
+
+let dashView = 'all';       // 'all' | 'month' | 'year' | 'winrate'
+let dashSubfilter = '';     // значение селектора
+
+async function loadDashboard(params = '') {
   try {
-    const data = await apiGet('/stats/summary');
+    const data = await apiGet(`/stats/summary${params ? '?' + params : ''}`);
     const { stats, recent_trades } = data;
 
     document.getElementById('dash-winrate').textContent = stats.total_trades ? `${stats.winrate}%` : '—';
     document.getElementById('dash-pf').textContent = stats.total_trades ? stats.profit_factor : '—';
     document.getElementById('dash-count').textContent = stats.total_trades || '0';
 
-    // Сохраняем total_r чтобы пересчитывать при смене режима без повторного запроса
     window._dashTotalR = stats.total_trades ? (stats.total_r ?? null) : null;
     updateDashPnlDisplay();
 
     drawEquityCurve(document.getElementById('dash-equity-chart'), stats.r_curve);
 
-    const hasTrades = stats.total_trades > 0;
-    document.getElementById('dash-recent-section').classList.toggle('hidden', !hasTrades);
-    document.getElementById('dash-empty-state').classList.toggle('hidden', hasTrades);
+    // Последние сделки показываем только на вкладке "Всё"
+    const showRecent = dashView === 'all' && stats.total_trades > 0;
+    document.getElementById('dash-recent-section').classList.toggle('hidden', !showRecent);
+    document.getElementById('dash-empty-state').classList.toggle('hidden', stats.total_trades > 0);
 
-    if (hasTrades) {
+    if (showRecent && recent_trades?.length) {
       document.getElementById('dash-recent-list').innerHTML = recent_trades.map(renderTradeRow).join('');
       attachTradeRowHandlers('dash-recent-list');
     }
@@ -375,6 +380,145 @@ async function loadDashboard() {
     console.error('Не удалось загрузить дашборд', e);
   }
 }
+
+// Строим query-параметры из текущего фильтра дашборда
+function buildDashParams() {
+  if (dashView === 'all') return '';
+  const p = new URLSearchParams();
+  if (dashView === 'month' && dashSubfilter) {
+    const [y, m] = dashSubfilter.split('-');
+    p.set('year', y); p.set('month', m);
+  } else if (dashView === 'year' && dashSubfilter) {
+    p.set('year', dashSubfilter);
+  } else if (dashView === 'winrate' && dashSubfilter) {
+    p.set('result', dashSubfilter);
+  }
+  return p.toString();
+}
+
+// Заполняем субфильтр-селектор в зависимости от выбранной вкладки
+async function buildDashSubfilter() {
+  const sel = document.getElementById('dash-subfilter');
+  const sub = sel;
+
+  if (dashView === 'month') {
+    try {
+      const data = await apiGet('/trades/years');
+      // Получаем все уникальные пары год-месяц из trades
+      const tradesData = await apiGet('/trades');
+      const months = [...new Set(tradesData.trades.map(t => {
+        const d = t.trade_date || t.created_at || '';
+        const m = d.match(/(\d{4})[.\-\/]?(\d{2})/);
+        return m ? `${m[1]}-${m[2]}` : null;
+      }).filter(Boolean))].sort().reverse();
+
+      const names = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+        'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+      sel.innerHTML = months.map(k => {
+        const [y, mo] = k.split('-');
+        return `<option value="${k}">${names[parseInt(mo)-1]} ${y}</option>`;
+      }).join('');
+      dashSubfilter = months[0] || '';
+      sel.value = dashSubfilter;
+    } catch(e) {}
+
+  } else if (dashView === 'year') {
+    try {
+      const data = await apiGet('/trades/years');
+      const years = (data.years || []).sort().reverse();
+      sel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+      dashSubfilter = String(years[0] || '');
+      sel.value = dashSubfilter;
+    } catch(e) {}
+
+  } else if (dashView === 'winrate') {
+    sel.innerHTML = `
+      <option value="win">Прибыль</option>
+      <option value="loss">Убыток</option>
+      <option value="breakeven">Безубыток</option>`;
+    dashSubfilter = 'win';
+    sel.value = dashSubfilter;
+  }
+
+  sel.classList.toggle('hidden', dashView === 'all');
+}
+
+// Табы дашборда
+document.querySelectorAll('.dash-tab').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    dashView = btn.dataset.view;
+    dashSubfilter = '';
+    await buildDashSubfilter();
+    loadDashboard(buildDashParams());
+  });
+});
+
+document.getElementById('dash-subfilter').addEventListener('change', e => {
+  dashSubfilter = e.target.value;
+  loadDashboard(buildDashParams());
+});
+
+// ---------- Скриншот-карточка 📸 ----------
+
+document.getElementById('dash-screenshot-btn').addEventListener('click', async () => {
+  const card = document.getElementById('dash-pnl-card');
+
+  // Подгружаем html2canvas если ещё не загружен
+  if (!window.html2canvas) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  try {
+    // Временно скрываем переключатель режима чтобы не попал на карточку
+    const modeSwitch = document.getElementById('dash-pnl-mode-switch');
+    modeSwitch.style.visibility = 'hidden';
+
+    const canvas = await window.html2canvas(card, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+
+    modeSwitch.style.visibility = '';
+
+    // Добавляем небольшой паддинг вокруг карточки
+    const padded = document.createElement('canvas');
+    const pad = 24;
+    padded.width = canvas.width + pad * 2;
+    padded.height = canvas.height + pad * 2;
+    const ctx = padded.getContext('2d');
+    ctx.fillStyle = '#0D1117';
+    ctx.fillRect(0, 0, padded.width, padded.height);
+    ctx.drawImage(canvas, pad, pad);
+
+    // Сохраняем или шарим
+    padded.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      if (navigator.share && navigator.canShare?.({ files: [new File([blob], 'pnl.png', { type: 'image/png' })] })) {
+        const file = new File([blob], 'pnl-tracker.png', { type: 'image/png' });
+        navigator.share({ files: [file], title: 'Мои результаты' }).catch(() => {});
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pnl-tracker.png';
+        a.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }, 'image/png');
+
+  } catch(e) {
+    console.error('Скриншот не удался', e);
+    alert('Не удалось создать карточку');
+  }
+});
 
 document.getElementById('dash-connect-btn').addEventListener('click', () => showScreen('exchange'));
 document.getElementById('dash-manual-btn').addEventListener('click', () => showScreen('add-trade'));
