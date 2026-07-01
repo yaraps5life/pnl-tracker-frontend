@@ -1580,6 +1580,41 @@ document.getElementById('settings-delete-row').addEventListener('click', async (
   }
 });
 
-// ---------- Запуск ----------
+// ---------- Запуск — сплэш-экран ----------
 
-renderOnboarding();
+(function initSplash() {
+  // Показываем сплэш, через 1.2с переходим на дашборд
+  const splash = document.getElementById('screen-onboarding');
+
+  // Рисуем логотип P&L TRACKER прямо в HTML онбординга
+  splash.innerHTML = `
+    <div style="
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh; background: #fff;
+    ">
+      <div style="text-align: left; line-height: 1;">
+        <div style="
+          font-family: 'Inter', sans-serif;
+          font-size: 96px;
+          font-weight: 800;
+          color: #000;
+          letter-spacing: -0.04em;
+          line-height: 0.9;
+        ">P&amp;L</div>
+        <div style="
+          font-family: 'Inter', sans-serif;
+          font-size: 18px;
+          font-weight: 700;
+          color: #000;
+          letter-spacing: 0.18em;
+          text-align: right;
+          margin-top: 4px;
+        ">TRACKER</div>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    showScreen('dashboard');
+  }, 1200);
+})();
