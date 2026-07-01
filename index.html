@@ -39,9 +39,21 @@
   <div class="screen" id="screen-dashboard">
     <div class="header">
       <h1>Дашборд</h1>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <button class="icon-btn" id="dash-screenshot-btn" title="Сохранить карточку">📸</button>
-        <button class="icon-btn" id="dash-history-btn" title="История всех сделок">🕐</button>
+      <div style="display:flex;align-items:center;gap:2px;">
+        <!-- Фотоаппарат -->
+        <button class="icon-btn hdr-icon-btn" id="dash-screenshot-btn" title="Сохранить карточку">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8.5 3L7 5H3C2 5 1 6 1 7V17C1 18 2 19 3 19H19C20 19 21 18 21 17V7C21 6 20 5 19 5H15L13.5 3H8.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" fill="none"/>
+            <circle cx="11" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7" fill="none"/>
+          </svg>
+        </button>
+        <!-- Переключатель темы -->
+        <button class="icon-btn hdr-icon-btn" id="dash-theme-btn" title="Сменить тему">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 3V1M11 21V19M3 11H1M21 11H19M5.6 5.6L4.2 4.2M17.8 17.8L16.4 16.4M5.6 16.4L4.2 17.8M17.8 4.2L16.4 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="4" stroke="currentColor" stroke-width="1.7" fill="none"/>
+          </svg>
+        </button>
       </div>
     </div>
 

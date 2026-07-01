@@ -647,7 +647,17 @@ document.getElementById('share-action-more').addEventListener('click', () => {
 
 document.getElementById('dash-connect-btn').addEventListener('click', () => showScreen('exchange'));
 document.getElementById('dash-manual-btn').addEventListener('click', () => showScreen('add-trade'));
-document.getElementById('dash-history-btn').addEventListener('click', () => showScreen('journal'));
+document.getElementById('dash-history-btn')?.addEventListener('click', () => showScreen('journal'));
+
+// Кнопка переключения темы в шапке дашборда — циклически меняет авто→светлая→тёмная
+document.getElementById('dash-theme-btn').addEventListener('click', () => {
+  const modes = ['auto', 'light', 'dark'];
+  const cur = getThemeMode();
+  const next = modes[(modes.indexOf(cur) + 1) % modes.length];
+  setThemeMode(next);
+  // Подсвечиваем кнопку когда тема не авто
+  document.getElementById('dash-theme-btn').classList.toggle('active', next !== 'auto');
+});
 document.getElementById('dash-see-all-btn').addEventListener('click', () => showScreen('journal'));
 document.getElementById('dash-fab-btn').addEventListener('click', () => showScreen('add-trade'));
 
@@ -655,18 +665,19 @@ document.getElementById('dash-fab-btn').addEventListener('click', () => showScre
 
 function renderTradeRow(t) {
   const isLong = t.direction === 'long';
-  const sourceLabel = t.source === 'auto' ? 'авто' : 'ручная';
+  const date = (t.trade_date || t.created_at || '—').split('T')[0].split(' ')[0];
+  const entry = t.entry_price ? ` · ${t.entry_price}` : '';
   return `
     <div class="trade-row" data-trade-id="${t.id}">
       <div class="trade-left">
         <div class="trade-icon ${isLong ? 'long' : 'short'}">${isLong ? '↗' : '↘'}</div>
         <div>
           <div class="trade-symbol">${t.symbol}</div>
-          <div class="trade-meta">${t.direction} · ${sourceLabel}</div>
+          <div class="trade-meta">${date}${entry}</div>
         </div>
       </div>
       <div class="trade-right">
-        <div class="trade-pnl ${pnlClass(t.result_r)}">${fmtR(t.result_r)}</div>
+        <div class="trade-pnl ${pnlClass(t.result_r)}" data-result-r="${t.result_r ?? ''}">${fmtPnl(t.result_r)}</div>
         <div class="trade-r ${outcomeClass(t.outcome)}">${outcomeLabel(t.outcome)}</div>
       </div>
     </div>
@@ -702,9 +713,14 @@ function getRiskUsd() {
 function setPnlMode(mode) {
   pnlMode = mode;
   localStorage.setItem('pnl_display_mode', mode);
-  // Синхронизируем оба переключателя (журнал и дашборд)
   document.querySelectorAll('.pnl-mode-btn').forEach((b) => {
     b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  // Обновляем уже отрисованные строки сделок на дашборде
+  document.querySelectorAll('.trade-pnl[data-result-r]').forEach((el) => {
+    const r = el.dataset.resultR === '' ? null : parseFloat(el.dataset.resultR);
+    el.textContent = fmtPnl(r);
+    el.className = `trade-pnl ${pnlClass(r)}`;
   });
   renderJournalTable();
   updateDashPnlDisplay();
