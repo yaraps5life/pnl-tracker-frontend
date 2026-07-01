@@ -386,6 +386,19 @@
       </div>
       <div class="field-hint" style="margin-bottom: 16px;">Для отображения PnL в $ и % в журнале</div>
 
+      <div class="section-label">Поделиться</div>
+      <div class="share-block" id="share-block">
+        <div class="share-desc">Публичная ссылка — все желающие смогут посмотреть твои сделки и статистику.</div>
+        <div class="share-link-row hidden" id="share-link-row">
+          <input type="text" id="share-link-input" readonly>
+          <button class="btn-icon-copy" id="share-copy-btn" title="Скопировать">⎘</button>
+        </div>
+        <div class="share-actions">
+          <button class="btn btn-primary btn-sm" id="share-generate-btn">🔗 Создать ссылку</button>
+          <button class="btn btn-ghost btn-sm hidden" id="share-revoke-btn">Отозвать</button>
+        </div>
+      </div>
+
       <div class="section-label">Данные</div>
       <div class="settings-row" id="settings-exchange-row">
         <div class="settings-row-left"><span class="row-icon">🔌</span>Подключение биржи</div>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Журнал трейдера — AlfaRadar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+  <style>
+    :root {
+      --bg: #0D1117;
+      --surface: #161B22;
+      --surface-2: #1C2128;
+      --border: rgba(255,255,255,0.08);
+      --text: #E6EDF3;
+      --text-secondary: #8B949E;
+      --text-muted: #6E7681;
+      --success: #3DDC97;
+      --success-bg: rgba(61,220,151,0.12);
+      --danger: #E5534B;
+      --danger-bg: rgba(229,83,75,0.12);
+      --accent: #58A6FF;
+      --neutral-bg: rgba(255,255,255,0.06);
+      --font: 'Inter', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Шапка ── */
+    .header {
+      padding: 32px 20px 0;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .header-badge::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .header-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .header-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── Карточка статистики ── */
+    .stats-card {
+      background: linear-gradient(135deg, #141920 0%, #0f1419 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      max-width: 680px;
+      margin: 0 auto 16px;
+    }
+
+    .stats-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .stats-pnl {
+      font-family: var(--mono);
+      font-size: 40px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .stats-pnl.positive { color: var(--success); }
+    .stats-pnl.negative { color: var(--danger); }
+    .stats-pnl.neutral  { color: var(--text-muted); }
+
+    canvas#chart {
+      width: 100%;
+      height: 64px;
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .metric-value {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── Контент ── */
+    .content {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 20px 48px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 24px 0 12px;
+    }
+
+    /* ── Таблица сделок ── */
+    .trades-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .trades-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0 0 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .trades-table th + th { padding-left: 12px; }
+
+    .trades-table td {
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .trades-table td + td { padding-left: 12px; }
+
+    .trades-table tbody tr { cursor: pointer; }
+    .trades-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+    .trades-table tbody tr:last-child td { border-bottom: none; }
+
+    .cell-date {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .cell-symbol { font-weight: 600; white-space: nowrap; }
+
+    .dir-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .dir-badge.long  { background: var(--success-bg); color: var(--success); }
+    .dir-badge.short { background: var(--danger-bg);  color: var(--danger);  }
+
+    .cell-r {
+      font-family: var(--mono);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .cell-r.positive { color: var(--success); }
+    .cell-r.negative { color: var(--danger); }
+
+    .outcome-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .outcome-badge::before { content: '●'; font-size: 7px; }
+    .outcome-badge.win      { background: var(--success-bg); color: var(--success); }
+    .outcome-badge.loss     { background: var(--danger-bg);  color: var(--danger);  }
+    .outcome-badge.breakeven{ background: var(--neutral-bg); color: var(--text-muted); }
+
+    /* ── Детали сделки (раскрывающиеся) ── */
+    .trade-detail-row td {
+      padding: 0 0 0 !important;
+      border-bottom: none !important;
+    }
+
+    .trade-detail-inner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 2px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 20px;
+    }
+
+    .detail-item-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .detail-item-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .trade-note {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--surface-2);
+      border-left: 2px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 8px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    /* ── Состояния ── */
+    .state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .state-icon { font-size: 36px; margin-bottom: 12px; }
+    .state-title { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .state-text  { font-size: 13px; }
+
+    /* ── Футер ── */
+    .footer {
+      text-align: center;
+      padding: 0 20px 32px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer a { color: var(--accent); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">Публичный журнал</div>
+  <div class="header-title" id="header-title">—</div>
+  <div class="header-sub" id="header-sub">Загрузка...</div>
+</div>
+
+<div class="stats-card" id="stats-card" style="padding: 20px;">
+  <div class="stats-card-label">Суммарный R</div>
+  <div class="stats-pnl neutral" id="stat-pnl">—</div>
+  <canvas id="chart"></canvas>
+  <div class="metrics">
+    <div>
+      <div class="metric-label">Винрейт</div>
+      <div class="metric-value" id="stat-winrate">—</div>
+    </div>
+    <div>
+      <div class="metric-label">Profit factor</div>
+      <div class="metric-value" id="stat-pf">—</div>
+    </div>
+    <div>
+      <div class="metric-label">Сделок</div>
+      <div class="metric-value" id="stat-count">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="section-title">История сделок</div>
+  <div id="trades-container">
+    <div class="state">
+      <div class="state-icon">⏳</div>
+      <div class="state-title">Загрузка...</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Журнал ведётся в <a href="https://t.me/AlfaRadar" target="_blank">AlfaRadar PnL Tracker</a>
+</div>
+
+<script>
+  const API = 'https://tracker-pnl-production.up.railway.app';
+
+  const params = new URLSearchParams(location.search);
+  const token = params.get('token');
+
+  function fmtR(v) {
+    if (v === null || v === undefined) return '—';
+    return (v > 0 ? '+' : '') + v.toFixed(1) + 'R';
+  }
+
+  function outcomeLabel(o) {
+    if (o === 'win') return 'прибыль';
+    if (o === 'loss') return 'убыток';
+    if (o === 'breakeven') return 'безубыток';
+    return '—';
+  }
+
+  function drawChart(values) {
+    const canvas = document.getElementById('chart');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    if (!values || values.length < 2) {
+      ctx.strokeStyle = '#262C36';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, rect.height / 2);
+      ctx.lineTo(rect.width, rect.height / 2);
+      ctx.stroke();
+      return;
+    }
+
+    const min = Math.min(...values, 0);
+    const max = Math.max(...values, 0);
+    const range = max - min || 1;
+    const pos = values[values.length - 1] >= 0;
+    const lineColor  = pos ? '#3DDC97' : '#E5534B';
+    const fillA = pos ? 'rgba(61,220,151,0.22)' : 'rgba(229,83,75,0.22)';
+    const fillB = pos ? 'rgba(61,220,151,0)' : 'rgba(229,83,75,0)';
+
+    const pts = values.map((v, i) => ({
+      x: (i / (values.length - 1)) * rect.width,
+      y: rect.height - ((v - min) / range) * rect.height,
+    }));
+
+    const grad = ctx.createLinearGradient(0, 0, 0, rect.height);
+    grad.addColorStop(0, fillA);
+    grad.addColorStop(1, fillB);
+
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[pts.length - 1].x, rect.height);
+    ctx.lineTo(pts[0].x, rect.height);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.stroke();
+  }
+
+  function renderTrades(trades) {
+    if (!trades.length) {
+      return `<div class="state">
+        <div class="state-icon">📋</div>
+        <div class="state-title">Сделок пока нет</div>
+        <div class="state-text">Трейдер ещё не добавил ни одной сделки</div>
+      </div>`;
+    }
+
+    const rows = trades.map((t, idx) => {
+      const isLong = t.direction === 'long';
+      const rClass = t.result_r > 0 ? 'positive' : t.result_r < 0 ? 'negative' : '';
+      const outcomeClass = t.outcome === 'win' ? 'win' : t.outcome === 'loss' ? 'loss' : 'breakeven';
+      const date = (t.trade_date || '—').split(' ')[0];
+
+      const hasDetails = t.entry_price || t.exit_price || t.size || t.leverage;
+      const hasNote = t.note && t.note.trim();
+      const expandable = hasDetails || hasNote;
+
+      return `
+        <tr class="trade-row" data-idx="${idx}" ${expandable ? 'style="cursor:pointer"' : ''}>
+          <td class="cell-date">${date}</td>
+          <td class="cell-symbol">${t.symbol || t.asset}</td>
+          <td><span class="dir-badge ${isLong ? 'long' : 'short'}">${isLong ? 'лонг' : 'шорт'}</span></td>
+          <td class="cell-r ${rClass}">${fmtR(t.result_r)}</td>
+          <td><span class="outcome-badge ${outcomeClass}">${outcomeLabel(t.outcome)}</span></td>
+        </tr>
+        ${expandable ? `
+        <tr class="trade-detail-row" id="detail-${idx}" style="display:none;">
+          <td colspan="5" style="padding: 0 0 8px !important;">
+            ${hasDetails ? `
+            <div class="trade-detail-inner">
+              ${t.entry_price ? `<div><div class="detail-item-label">Вход</div><div class="detail-item-value">${t.entry_price}</div></div>` : ''}
+              ${t.exit_price  ? `<div><div class="detail-item-label">Выход</div><div class="detail-item-value">${t.exit_price}</div></div>` : ''}
+              ${t.size        ? `<div><div class="detail-item-label">Размер</div><div class="detail-item-value">${t.size}</div></div>` : ''}
+              ${t.leverage    ? `<div><div class="detail-item-label">Leverage</div><div class="detail-item-value">${t.leverage}x</div></div>` : ''}
+            </div>` : ''}
+            ${hasNote ? `<div class="trade-note">${t.note}</div>` : ''}
+          </td>
+        </tr>` : ''}
+      `;
+    }).join('');
+
+    return `<table class="trades-table">
+      <thead>
+        <tr>
+          <th>Дата</th>
+          <th>Тикер</th>
+          <th>Напр.</th>
+          <th>R</th>
+          <th>Итог</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  async function load() {
+    if (!token) {
+      document.getElementById('header-sub').textContent = '';
+      document.getElementById('trades-container').innerHTML = `
+        <div class="state">
+          <div class="state-icon">🔒</div>
+          <div class="state-title">Ссылка недействительна</div>
+          <div class="state-text">Токен не указан или ссылка устарела</div>
+        </div>`;
+      return;
+    }
+
+    try {
+      const [statsRes, tradesRes] = await Promise.all([
+        fetch(`${API}/public/${token}/stats`),
+        fetch(`${API}/public/${token}/trades`),
+      ]);
+
+      if (!statsRes.ok || !tradesRes.ok) throw new Error('not_found');
+
+      const { stats } = await statsRes.json();
+      const { trades } = await tradesRes.json();
+
+      // Шапка
+      document.getElementById('header-title').textContent = 'Журнал трейдера';
+      document.getElementById('header-sub').textContent =
+        `${stats.total_trades} сделок · обновлено только что`;
+
+      // Статистика
+      const pnlEl = document.getElementById('stat-pnl');
+      pnlEl.textContent = fmtR(stats.total_r);
+      pnlEl.className = 'stats-pnl ' + (stats.total_r > 0 ? 'positive' : stats.total_r < 0 ? 'negative' : 'neutral');
+
+      document.getElementById('stat-winrate').textContent = stats.total_trades ? `${stats.winrate}%` : '—';
+      document.getElementById('stat-pf').textContent = stats.total_trades ? stats.profit_factor : '—';
+      document.getElementById('stat-count').textContent = stats.total_trades || '0';
+
+      // График
+      requestAnimationFrame(() => drawChart(stats.r_curve));
+
+      // Таблица
+      document.getElementById('trades-container').innerHTML = renderTrades(trades);
+
+      // Клики по строкам — раскрытие деталей
+      document.querySelectorAll('.trade-row').forEach((row) => {
+        const idx = row.dataset.idx;
+        const detail = document.getElementById(`detail-${idx}`);
+        if (!detail) return;
+        row.addEventListener('click', () => {
+          const hidden = detail.style.display === 'none';
+          detail.style.display = hidden ? '' : 'none';
+        });
+      });
+
+    } catch (e) {
+      document.getElementById('header-sub').textContent = '';
+      document.getElementById('trades-container').innerHTML = `
+        <div class="state">
+          <div class="state-icon">🔗</div>
+          <div class="state-title">Ссылка не найдена</div>
+          <div class="state-text">Возможно, владелец отозвал доступ</div>
+        </div>`;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

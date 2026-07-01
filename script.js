@@ -1196,21 +1196,87 @@ function loadSettings() {
   document.getElementById('settings-risk-usd').value = riskUsd;
   document.getElementById('settings-risk-pct').value = riskPct;
 
-  // Сохраняем при изменении (debounce не нужен — значения маленькие)
   document.getElementById('settings-risk-usd').oninput = (e) => {
     localStorage.setItem('pnl_risk_usd', e.target.value);
-    renderJournalTable();   // сразу пересчитываем если журнал был открыт
+    renderJournalTable();
   };
   document.getElementById('settings-risk-pct').oninput = (e) => {
     localStorage.setItem('pnl_risk_pct', e.target.value);
     renderJournalTable();
   };
 
-  // Восстанавливаем активный режим переключателя
   document.querySelectorAll('.pnl-mode-btn').forEach((b) => {
     b.classList.toggle('active', b.dataset.mode === pnlMode);
   });
+
+  loadShareStatus();
 }
+
+// ---------- Шаринг журнала ----------
+
+const SHARE_BASE = 'https://yaraps5life.github.io/pnl-tracker-frontend/share.html?token=';
+
+function applyShareUI(token) {
+  const linkRow = document.getElementById('share-link-row');
+  const generateBtn = document.getElementById('share-generate-btn');
+  const revokeBtn = document.getElementById('share-revoke-btn');
+  const input = document.getElementById('share-link-input');
+
+  if (token) {
+    input.value = SHARE_BASE + token;
+    linkRow.classList.remove('hidden');
+    generateBtn.textContent = '🔗 Обновить ссылку';
+    revokeBtn.classList.remove('hidden');
+  } else {
+    linkRow.classList.add('hidden');
+    generateBtn.textContent = '🔗 Создать ссылку';
+    revokeBtn.classList.add('hidden');
+  }
+}
+
+async function loadShareStatus() {
+  try {
+    const data = await apiGet('/share/status');
+    applyShareUI(data.is_active ? data.token : null);
+  } catch (e) {
+    console.error('Не удалось загрузить статус шаринга', e);
+  }
+}
+
+document.getElementById('share-generate-btn').addEventListener('click', async () => {
+  try {
+    const data = await apiPost('/share/generate', {});
+    applyShareUI(data.token);
+    tg?.HapticFeedback?.notificationOccurred('success');
+  } catch (e) {
+    alert('Не удалось создать ссылку');
+  }
+});
+
+document.getElementById('share-revoke-btn').addEventListener('click', async () => {
+  const confirmed = await showConfirmModal({
+    title: 'Отозвать ссылку?',
+    text: 'Текущая ссылка перестанет работать. Потом можно создать новую.',
+    confirmLabel: 'Отозвать',
+  });
+  if (!confirmed) return;
+  try {
+    await apiDelete('/share');
+    applyShareUI(null);
+    tg?.HapticFeedback?.notificationOccurred('success');
+  } catch (e) {
+    alert('Не удалось отозвать ссылку');
+  }
+});
+
+document.getElementById('share-copy-btn').addEventListener('click', () => {
+  const val = document.getElementById('share-link-input').value;
+  navigator.clipboard?.writeText(val).then(() => {
+    const btn = document.getElementById('share-copy-btn');
+    btn.textContent = '✓';
+    setTimeout(() => { btn.textContent = '⎘'; }, 1500);
+  });
+});
 
 document.getElementById('settings-delete-row').addEventListener('click', async () => {
   const confirmed = await showConfirmModal({
