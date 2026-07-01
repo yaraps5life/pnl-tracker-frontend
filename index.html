@@ -461,6 +461,30 @@
     </div>
   </div>
 
+  <!-- ============ МОДАЛКА ШЕЙР-КАРТОЧКИ ============ -->
+  <div class="modal-overlay hidden" id="share-card-overlay">
+    <div class="share-card-modal">
+      <div class="share-card-preview">
+        <canvas id="share-canvas"></canvas>
+      </div>
+      <div class="share-card-actions">
+        <button class="share-action-btn" id="share-action-save">
+          <span class="share-action-icon">⬇</span>
+          <span>Сохранить</span>
+        </button>
+        <button class="share-action-btn" id="share-action-telegram">
+          <span class="share-action-icon tg-icon">✈</span>
+          <span>Telegram</span>
+        </button>
+        <button class="share-action-btn" id="share-action-more">
+          <span class="share-action-icon">···</span>
+          <span>Больше</span>
+        </button>
+      </div>
+      <button class="share-card-close" id="share-card-close">Закрыть</button>
+    </div>
+  </div>
+
 </div>
 
 <script src="script.js"></script>

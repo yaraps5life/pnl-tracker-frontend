@@ -363,6 +363,7 @@ async function loadDashboard(params = '') {
     document.getElementById('dash-count').textContent = stats.total_trades || '0';
 
     window._dashTotalR = stats.total_trades ? (stats.total_r ?? null) : null;
+    window._dashRCurve = stats.r_curve || [];
     updateDashPnlDisplay();
 
     drawEquityCurve(document.getElementById('dash-equity-chart'), stats.r_curve);
@@ -462,62 +463,186 @@ document.getElementById('dash-subfilter').addEventListener('change', e => {
 
 // ---------- Скриншот-карточка 📸 ----------
 
-document.getElementById('dash-screenshot-btn').addEventListener('click', async () => {
-  const card = document.getElementById('dash-pnl-card');
+function drawShareCard(canvas) {
+  const W = 800, H = 480;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
 
-  // Подгружаем html2canvas если ещё не загружен
-  if (!window.html2canvas) {
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload = resolve; s.onerror = reject;
-      document.head.appendChild(s);
-    });
+  // Фон
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#141920');
+  bg.addColorStop(1, '#0D1117');
+  ctx.fillStyle = bg;
+  roundRect(ctx, 0, 0, W, H, 24);
+  ctx.fill();
+
+  // Тонкая рамка
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, 0.5, 0.5, W - 1, H - 1, 24);
+  ctx.stroke();
+
+  const r = window._dashTotalR;
+  const isPos = r >= 0;
+  const accentColor = isPos ? '#3DDC97' : '#E5534B';
+
+  // Слабый акцент-блик сверху
+  const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, 280);
+  glow.addColorStop(0, isPos ? 'rgba(61,220,151,0.08)' : 'rgba(229,83,75,0.08)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // Лейбл периода
+  const periodLabel = getDashPeriodLabel();
+  ctx.font = '500 14px Inter, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillText('Журнал трейдера · ' + periodLabel, 40, 52);
+
+  // Большое число PnL
+  const pnlText = fmtPnl(r) || '—';
+  ctx.font = `700 ${pnlText.length > 7 ? 72 : 88}px Inter, sans-serif`;
+  ctx.fillStyle = accentColor;
+  ctx.fillText(pnlText, 40, 148);
+
+  // Метрики — винрейт, PF, сделок
+  const wr = document.getElementById('dash-winrate').textContent;
+  const pf = document.getElementById('dash-pf').textContent;
+  const cnt = document.getElementById('dash-count').textContent;
+  const metrics = [
+    { label: 'Винрейт',      value: wr },
+    { label: 'Profit factor', value: pf },
+    { label: 'Сделок',       value: cnt },
+  ];
+  metrics.forEach((m, i) => {
+    const x = 40 + i * 160;
+    ctx.font = '500 12px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fillText(m.label.toUpperCase(), x, 192);
+    ctx.font = '600 22px "JetBrains Mono", monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.90)';
+    ctx.fillText(m.value, x, 222);
+  });
+
+  // Мини-график equity
+  drawMiniChart(ctx, 40, 248, W - 80, 140, accentColor, isPos);
+
+  // Нижняя строка — url
+  ctx.font = '500 13px Inter, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.fillText('tracker-pnl-production.up.railway.app', 40, H - 24);
+
+  // Точка статуса
+  ctx.beginPath();
+  ctx.arc(W - 40, H - 30, 5, 0, Math.PI * 2);
+  ctx.fillStyle = accentColor;
+  ctx.fill();
+}
+
+function drawMiniChart(ctx, x, y, w, h, color, isPos) {
+  const curve = window._dashRCurve;
+  if (!curve || curve.length < 2) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(x, y + h / 2); ctx.lineTo(x + w, y + h / 2); ctx.stroke();
+    ctx.setLineDash([]);
+    return;
   }
+  const min = Math.min(...curve, 0), max = Math.max(...curve, 0), range = max - min || 1;
+  const pts = curve.map((v, i) => ({
+    x: x + (i / (curve.length - 1)) * w,
+    y: y + h - ((v - min) / range) * h,
+  }));
 
-  try {
-    // Временно скрываем переключатель режима чтобы не попал на карточку
-    const modeSwitch = document.getElementById('dash-pnl-mode-switch');
-    modeSwitch.style.visibility = 'hidden';
+  const grad = ctx.createLinearGradient(0, y, 0, y + h);
+  grad.addColorStop(0, isPos ? 'rgba(61,220,151,0.3)' : 'rgba(229,83,75,0.3)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length - 1].x, y + h);
+  ctx.lineTo(pts[0].x, y + h);
+  ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
 
-    const canvas = await window.html2canvas(card, {
-      backgroundColor: null,
-      scale: 2,
-      useCORS: true,
-      logging: false,
-    });
+  ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+  ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+}
 
-    modeSwitch.style.visibility = '';
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
 
-    // Добавляем небольшой паддинг вокруг карточки
-    const padded = document.createElement('canvas');
-    const pad = 24;
-    padded.width = canvas.width + pad * 2;
-    padded.height = canvas.height + pad * 2;
-    const ctx = padded.getContext('2d');
-    ctx.fillStyle = '#0D1117';
-    ctx.fillRect(0, 0, padded.width, padded.height);
-    ctx.drawImage(canvas, pad, pad);
+function getDashPeriodLabel() {
+  if (dashView === 'all') return 'Всё время';
+  const sel = document.getElementById('dash-subfilter');
+  return sel?.options[sel.selectedIndex]?.text || dashSubfilter || '';
+}
 
-    // Сохраняем или шарим
-    padded.toBlob(blob => {
+function openShareCardModal() {
+  const overlay = document.getElementById('share-card-overlay');
+  const canvas = document.getElementById('share-canvas');
+  drawShareCard(canvas);
+  overlay.classList.remove('hidden');
+}
+
+function closeShareCardModal() {
+  document.getElementById('share-card-overlay').classList.add('hidden');
+}
+
+function getShareBlob(cb) {
+  document.getElementById('share-canvas').toBlob(cb, 'image/png');
+}
+
+document.getElementById('dash-screenshot-btn').addEventListener('click', openShareCardModal);
+document.getElementById('share-card-close').addEventListener('click', closeShareCardModal);
+document.getElementById('share-card-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeShareCardModal();
+});
+
+document.getElementById('share-action-save').addEventListener('click', () => {
+  getShareBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'pnl-tracker.png'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  });
+});
+
+document.getElementById('share-action-telegram').addEventListener('click', () => {
+  getShareBlob(blob => {
+    const file = new File([blob], 'pnl-tracker.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      navigator.share({ files: [file] }).catch(() => {});
+    } else {
+      // Фолбэк — просто скачать
       const url = URL.createObjectURL(blob);
-      if (navigator.share && navigator.canShare?.({ files: [new File([blob], 'pnl.png', { type: 'image/png' })] })) {
-        const file = new File([blob], 'pnl-tracker.png', { type: 'image/png' });
-        navigator.share({ files: [file], title: 'Мои результаты' }).catch(() => {});
-      } else {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'pnl-tracker.png';
-        a.click();
-      }
+      const a = document.createElement('a');
+      a.href = url; a.download = 'pnl-tracker.png'; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 3000);
-    }, 'image/png');
+    }
+  });
+});
 
-  } catch(e) {
-    console.error('Скриншот не удался', e);
-    alert('Не удалось создать карточку');
-  }
+document.getElementById('share-action-more').addEventListener('click', () => {
+  getShareBlob(blob => {
+    const file = new File([blob], 'pnl-tracker.png', { type: 'image/png' });
+    if (navigator.share) {
+      navigator.share({ files: [file], title: 'Мои результаты' }).catch(() => {});
+    }
+  });
 });
 
 document.getElementById('dash-connect-btn').addEventListener('click', () => showScreen('exchange'));
