@@ -114,6 +114,7 @@ body {
   flex-direction: column;
   background: var(--bg);
   position: relative;
+  overflow-x: hidden;
 }
 
 .screen {
@@ -493,12 +494,20 @@ body {
 #journal-summary-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: 6px;
   font-size: 13px;
   color: var(--text-secondary);
   padding-top: 2px;
   padding-bottom: 6px;
+}
+
+.journal-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 #journal-summary-row .journal-summary-dot {
@@ -515,6 +524,80 @@ body {
 
 #journal-summary-rr.positive { color: var(--success); }
 #journal-summary-rr.negative { color: var(--danger); }
+
+/* Переключатель R / $ / % */
+.pnl-mode-switch {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.pnl-mode-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.pnl-mode-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* Поле риска в настройках */
+.risk-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 6px;
+}
+
+.risk-label {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.risk-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+.risk-currency {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.risk-field input {
+  width: 70px;
+  border: none;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  text-align: right;
+}
+
+.risk-field input::placeholder {
+  color: var(--text-faint);
+}
 
 /* ============ Таблица сделок ============ */
 

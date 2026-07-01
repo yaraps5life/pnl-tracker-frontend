@@ -112,11 +112,18 @@
 
     <!-- Сводка по текущему отфильтрованному периоду/срезу -->
     <div class="section" id="journal-summary-row">
-      <span id="journal-summary-count">0 сделок</span>
-      <span class="journal-summary-dot">·</span>
-      <span id="journal-summary-winrate">винрейт —</span>
-      <span class="journal-summary-dot">·</span>
-      <span id="journal-summary-rr" class="mono">R —</span>
+      <div class="journal-summary-left">
+        <span id="journal-summary-count">0 сделок</span>
+        <span class="journal-summary-dot">·</span>
+        <span id="journal-summary-winrate">винрейт —</span>
+        <span class="journal-summary-dot">·</span>
+        <span id="journal-summary-rr" class="mono">R —</span>
+      </div>
+      <div class="pnl-mode-switch" id="pnl-mode-switch">
+        <button class="pnl-mode-btn active" data-mode="r">R</button>
+        <button class="pnl-mode-btn" data-mode="usd">$</button>
+        <button class="pnl-mode-btn" data-mode="pct">%</button>
+      </div>
     </div>
 
     <div class="section" id="journal-table-wrap" style="padding: 0 12px;">
@@ -125,9 +132,9 @@
           <tr>
             <th data-sort="trade_date">Дата</th>
             <th data-sort="symbol">Тикер</th>
-            <th data-sort="direction">Направл.</th>
+            <th data-sort="direction">Напр.</th>
             <th data-sort="result_r">R</th>
-            <th data-sort="result">Винрейт</th>
+            <th data-sort="result">Итог</th>
           </tr>
         </thead>
         <tbody id="journal-table-body">
@@ -355,6 +362,22 @@
         <button class="theme-btn" data-theme="light">Светлая</button>
         <button class="theme-btn" data-theme="dark">Тёмная</button>
       </div>
+
+      <div class="section-label">Торговля</div>
+      <div class="risk-input-row">
+        <span class="risk-label">Риск на сделку</span>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div class="risk-field">
+            <span class="risk-currency">$</span>
+            <input type="number" id="settings-risk-usd" placeholder="50" step="1" min="1">
+          </div>
+          <div class="risk-field">
+            <span class="risk-currency">%</span>
+            <input type="number" id="settings-risk-pct" placeholder="0.25" step="0.01" min="0.01">
+          </div>
+        </div>
+      </div>
+      <div class="field-hint" style="margin-bottom: 16px;">Для отображения PnL в $ и % в журнале</div>
 
       <div class="section-label">Данные</div>
       <div class="settings-row" id="settings-exchange-row">

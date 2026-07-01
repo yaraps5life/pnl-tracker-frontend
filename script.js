@@ -373,6 +373,48 @@ let journalSortColumn = 'trade_date';
 let journalSortDir = 'desc';      // 'asc' | 'desc'
 let journalRowsCache = [];        // последние загруженные строки — пересортировываем без нового запроса
 
+// Режим отображения PnL: 'r' | 'usd' | 'pct'
+// Хранится в localStorage, чтобы не сбрасывался при переключении экранов
+let pnlMode = localStorage.getItem('pnl_display_mode') || 'r';
+
+// Риск на сделку в долларах — берётся из настроек (localStorage)
+function getRiskUsd() {
+  return parseFloat(localStorage.getItem('pnl_risk_usd') || '0') || 0;
+}
+
+function setPnlMode(mode) {
+  pnlMode = mode;
+  localStorage.setItem('pnl_display_mode', mode);
+  document.querySelectorAll('.pnl-mode-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  renderJournalTable();
+}
+
+document.querySelectorAll('.pnl-mode-btn').forEach((b) => {
+  b.addEventListener('click', () => setPnlMode(b.dataset.mode));
+});
+
+// Форматирует R-значение в выбранный режим отображения
+function fmtPnl(resultR) {
+  if (resultR === null || resultR === undefined) return '—';
+  if (pnlMode === 'usd') {
+    const risk = getRiskUsd();
+    if (!risk) return fmtR(resultR) + ' (задай риск $)';
+    const usd = resultR * risk;
+    const sign = usd > 0 ? '+' : '';
+    return `${sign}${usd.toFixed(0)}$`;
+  }
+  if (pnlMode === 'pct') {
+    const riskPct = parseFloat(localStorage.getItem('pnl_risk_pct') || '0') || 0;
+    if (!riskPct) return fmtR(resultR) + ' (задай риск %)';
+    const pct = resultR * riskPct;
+    const sign = pct > 0 ? '+' : '';
+    return `${sign}${pct.toFixed(2)}%`;
+  }
+  return fmtR(resultR);
+}
+
 async function loadJournal() {
   const tableBody = document.getElementById('journal-table-body');
   const tableWrap = document.getElementById('journal-table-wrap');
@@ -422,7 +464,7 @@ function renderJournalSummary() {
     : 'винрейт —';
 
   const totalR = rows.reduce((sum, t) => sum + (t.result_r || 0), 0);
-  rrEl.textContent = total ? fmtR(totalR) : 'R —';
+  rrEl.textContent = total ? fmtPnl(totalR) : 'R —';
   rrEl.className = `mono ${total ? pnlClass(totalR) : ''}`;
 }
 
@@ -500,7 +542,7 @@ function renderTableRow(t) {
       <td class="cell-date">${dateStr}</td>
       <td class="cell-symbol">${t.symbol}</td>
       <td><span class="cell-direction ${isLong ? 'long' : 'short'}">${isLong ? 'лонг' : 'шорт'}</span></td>
-      <td class="cell-r">${fmtR(t.result_r)}</td>
+      <td class="cell-r">${fmtPnl(t.result_r)}</td>
       <td><span class="cell-result ${resultClass}"><span class="result-dot"></span>${resultLabel}</span></td>
     </tr>
   `;
@@ -1097,6 +1139,27 @@ function loadSettings() {
     document.getElementById('settings-handle').textContent = user.username ? `@${user.username}` : '';
     document.getElementById('settings-avatar').textContent = (user.first_name || '?')[0].toUpperCase();
   }
+
+  // Загружаем сохранённые значения риска
+  const riskUsd = localStorage.getItem('pnl_risk_usd') || '';
+  const riskPct = localStorage.getItem('pnl_risk_pct') || '';
+  document.getElementById('settings-risk-usd').value = riskUsd;
+  document.getElementById('settings-risk-pct').value = riskPct;
+
+  // Сохраняем при изменении (debounce не нужен — значения маленькие)
+  document.getElementById('settings-risk-usd').oninput = (e) => {
+    localStorage.setItem('pnl_risk_usd', e.target.value);
+    renderJournalTable();   // сразу пересчитываем если журнал был открыт
+  };
+  document.getElementById('settings-risk-pct').oninput = (e) => {
+    localStorage.setItem('pnl_risk_pct', e.target.value);
+    renderJournalTable();
+  };
+
+  // Восстанавливаем активный режим переключателя
+  document.querySelectorAll('.pnl-mode-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.mode === pnlMode);
+  });
 }
 
 document.getElementById('settings-delete-row').addEventListener('click', async () => {
