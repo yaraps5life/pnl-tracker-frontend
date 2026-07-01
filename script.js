@@ -287,31 +287,79 @@ function drawEquityCurve(canvas, values) {
   const max = Math.max(...values, 0);
   const range = max - min || 1;
   const lastPositive = values[values.length - 1] >= 0;
+  const lineColor  = lastPositive ? '#3DDC97' : '#E5534B';
+  const fillColorA = lastPositive ? 'rgba(61,220,151,0.25)' : 'rgba(229,83,75,0.25)';
+  const fillColorB = lastPositive ? 'rgba(61,220,151,0)'    : 'rgba(229,83,75,0)';
 
-  ctx.strokeStyle = lastPositive ? '#3DDC97' : '#E5534B';
-  ctx.lineWidth = 2;
+  // Строим путь линии
+  const points = values.map((v, i) => ({
+    x: (i / (values.length - 1)) * rect.width,
+    y: rect.height - ((v - min) / range) * rect.height,
+  }));
+
+  // Градиентная заливка под кривой
+  const gradient = ctx.createLinearGradient(0, 0, 0, rect.height);
+  gradient.addColorStop(0, fillColorA);
+  gradient.addColorStop(1, fillColorB);
+
   ctx.beginPath();
-  values.forEach((v, i) => {
-    const x = (i / (values.length - 1)) * rect.width;
-    const y = rect.height - ((v - min) / range) * rect.height;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
+  points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.lineTo(points[points.length - 1].x, rect.height);
+  ctx.lineTo(points[0].x, rect.height);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // Линия поверх заливки
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.stroke();
 }
+
+// Обновляет большое число PnL на дашборде и заголовок карточки согласно pnlMode
+function updateDashPnlDisplay() {
+  const r = window._dashTotalR;
+  const pnlEl = document.getElementById('dash-pnl');
+  const label = document.getElementById('dash-pnl-label');
+
+  if (r === null || r === undefined) {
+    pnlEl.textContent = '—';
+    pnlEl.className = 'pnl-value mono neutral';
+    label.textContent = 'Суммарный R';
+  } else {
+    pnlEl.textContent = fmtPnl(r);
+    pnlEl.className = `pnl-value mono ${pnlClass(r)}`;
+    label.textContent = pnlMode === 'usd' ? 'Суммарный PnL' : pnlMode === 'pct' ? 'Суммарный PnL' : 'Суммарный R';
+  }
+
+  // Синхронизируем активную кнопку переключателя
+  document.querySelectorAll('#dash-pnl-mode-switch .pnl-mode-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.mode === pnlMode);
+  });
+}
+
+document.getElementById('dash-pnl-mode-switch').querySelectorAll('.pnl-mode-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    setPnlMode(btn.dataset.mode);
+    updateDashPnlDisplay();
+  });
+});
 
 async function loadDashboard() {
   try {
     const data = await apiGet('/stats/summary');
     const { stats, recent_trades } = data;
 
-    const pnlEl = document.getElementById('dash-pnl');
-    pnlEl.textContent = stats.total_trades ? fmtR(stats.total_r) : '—';
-    pnlEl.className = `pnl-value mono ${pnlClass(stats.total_r)}`;
-
     document.getElementById('dash-winrate').textContent = stats.total_trades ? `${stats.winrate}%` : '—';
     document.getElementById('dash-pf').textContent = stats.total_trades ? stats.profit_factor : '—';
     document.getElementById('dash-count').textContent = stats.total_trades || '0';
+
+    // Сохраняем total_r чтобы пересчитывать при смене режима без повторного запроса
+    window._dashTotalR = stats.total_trades ? (stats.total_r ?? null) : null;
+    updateDashPnlDisplay();
 
     drawEquityCurve(document.getElementById('dash-equity-chart'), stats.r_curve);
 
@@ -385,10 +433,12 @@ function getRiskUsd() {
 function setPnlMode(mode) {
   pnlMode = mode;
   localStorage.setItem('pnl_display_mode', mode);
+  // Синхронизируем оба переключателя (журнал и дашборд)
   document.querySelectorAll('.pnl-mode-btn').forEach((b) => {
     b.classList.toggle('active', b.dataset.mode === mode);
   });
   renderJournalTable();
+  updateDashPnlDisplay();
 }
 
 document.querySelectorAll('.pnl-mode-btn').forEach((b) => {

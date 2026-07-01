@@ -44,7 +44,14 @@
 
     <div class="section">
       <div class="pnl-card">
-        <div class="pnl-card-label">Суммарный R</div>
+        <div class="pnl-card-top">
+          <div class="pnl-card-label" id="dash-pnl-label">Суммарный R</div>
+          <div class="pnl-mode-switch" id="dash-pnl-mode-switch">
+            <button class="pnl-mode-btn" data-mode="r">R</button>
+            <button class="pnl-mode-btn" data-mode="usd">$</button>
+            <button class="pnl-mode-btn" data-mode="pct">%</button>
+          </div>
+        </div>
         <div class="pnl-row">
           <span class="pnl-value mono" id="dash-pnl">—</span>
         </div>
@@ -126,7 +133,7 @@
       </div>
     </div>
 
-    <div class="section" id="journal-table-wrap" style="padding: 0 12px;">
+    <div class="section" id="journal-table-wrap" style="padding: 0 16px;">
       <table class="trades-table" id="journal-table">
         <thead>
           <tr>

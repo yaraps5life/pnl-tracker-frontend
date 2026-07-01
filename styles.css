@@ -198,11 +198,45 @@ body {
   padding: 18px 16px;
 }
 
+/* В светлой теме карточка тёмная — явно задаём цвета текста внутри неё,
+   чтобы метрики и лейблы не сливались с фоном */
+.pnl-card .metric-label,
+.pnl-card .pnl-card-label {
+  color: rgba(255,255,255,0.45);
+}
+
+.pnl-card .metric-value {
+  color: rgba(255,255,255,0.92);
+}
+
+/* Строка заголовок + переключатель режима */
+.pnl-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
 .pnl-card-label {
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-faint);
-  margin-bottom: 6px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 0;
+}
+
+/* Переключатель внутри карточки — тёмный вариант */
+.pnl-card .pnl-mode-switch {
+  background: rgba(255,255,255,0.08);
+}
+
+.pnl-card .pnl-mode-btn {
+  color: rgba(255,255,255,0.4);
+}
+
+.pnl-card .pnl-mode-btn.active {
+  background: rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.92);
+  box-shadow: none;
 }
 
 .pnl-row {
@@ -609,16 +643,19 @@ body {
 
 .trades-table thead th {
   text-align: left;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  padding: 0 8px 8px;
+  padding: 0 4px 8px;
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
 }
+
+.trades-table thead th:first-child { padding-left: 0; }
+.trades-table thead th:last-child  { padding-right: 0; }
 
 .trades-table thead th:hover {
   color: var(--text-secondary);
@@ -636,10 +673,13 @@ body {
 }
 
 .trades-table tbody td {
-  padding: 10px 8px;
+  padding: 9px 4px;
   border-top: 1px solid var(--border);
   white-space: nowrap;
 }
+
+.trades-table tbody td:first-child { padding-left: 0; }
+.trades-table tbody td:last-child  { padding-right: 0; }
 
 .trades-table .cell-date {
   font-family: var(--font-mono);
@@ -652,9 +692,9 @@ body {
 }
 
 .trades-table .cell-direction {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 3px 9px;
+  padding: 2px 7px;
   border-radius: 999px;
   display: inline-block;
 }
@@ -675,13 +715,13 @@ body {
 }
 
 .trades-table .cell-result {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 3px 9px;
+  padding: 2px 7px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .trades-table .cell-result.win {
