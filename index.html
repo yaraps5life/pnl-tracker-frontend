@@ -312,6 +312,19 @@
           <label class="field-label" style="margin-top: 0;">Leverage</label>
           <input type="number" class="mono-input" id="add-leverage" placeholder="—" step="1" min="1">
         </div>
+
+        <!-- Риск на сделку — переопределяет глобальный -->
+        <div style="grid-column: 1 / -1; margin-top: 4px;">
+          <label class="field-label" style="margin-top: 0;">Риск на сделку (необязательно)</label>
+          <div class="trade-risk-row">
+            <input type="number" class="mono-input" id="add-risk-amount" placeholder="—" step="any" style="flex:1;">
+            <div class="pnl-mode-switch" id="add-risk-type-switch">
+              <button class="pnl-mode-btn active" data-rtype="r">R</button>
+              <button class="pnl-mode-btn" data-rtype="usd">$</button>
+              <button class="pnl-mode-btn" data-rtype="pct">%</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <label class="field-label">Заметка (необязательно)</label>
@@ -399,7 +412,14 @@
 
       <div class="section-label">Торговля</div>
       <div class="risk-input-row">
-        <span class="risk-label">Риск на сделку</span>
+        <span class="risk-label">Депозит</span>
+        <div class="risk-field">
+          <span class="risk-currency">$</span>
+          <input type="number" id="settings-deposit" placeholder="10000" step="100" min="1">
+        </div>
+      </div>
+      <div class="risk-input-row">
+        <span class="risk-label">Риск на сделку (по умолч.)</span>
         <div style="display:flex; gap:8px; align-items:center;">
           <div class="risk-field">
             <span class="risk-currency">$</span>
@@ -411,7 +431,7 @@
           </div>
         </div>
       </div>
-      <div class="field-hint" style="margin-bottom: 16px;">Для отображения PnL в $ и % в журнале</div>
+      <div class="field-hint" style="margin-bottom: 16px;">Риск на сделку можно переопределить отдельно для каждой сделки</div>
 
       <div class="section-label">Поделиться</div>
       <div class="share-block" id="share-block">
