@@ -265,9 +265,16 @@
         <button type="button" class="direction-btn short" id="add-direction-short" data-value="short">Short</button>
       </div>
 
-      <label class="field-label">Risk Reward (R)</label>
-      <input type="number" class="mono-input" id="add-result-r" placeholder="2.0" step="0.1" min="0">
-      <div class="field-hint">Вводи как положительное число — знак определяется результатом ниже</div>
+      <label class="field-label">Risk Reward</label>
+      <div class="result-r-row">
+        <input type="number" class="mono-input" id="add-result-r" placeholder="2.0" step="0.1" min="0">
+        <div class="pnl-mode-switch" id="add-rr-type-switch">
+          <button type="button" class="pnl-mode-btn active" data-rrtype="r">R</button>
+          <button type="button" class="pnl-mode-btn" data-rrtype="usd">$</button>
+          <button type="button" class="pnl-mode-btn" data-rrtype="pct">%</button>
+        </div>
+      </div>
+      <div class="field-hint" id="rr-hint">Вводи как положительное число — знак определяется результатом ниже</div>
 
       <label class="field-label">Результат</label>
       <div class="outcome-toggle">
@@ -311,19 +318,6 @@
         <div>
           <label class="field-label" style="margin-top: 0;">Leverage</label>
           <input type="number" class="mono-input" id="add-leverage" placeholder="—" step="1" min="1">
-        </div>
-
-        <!-- Риск на сделку — переопределяет глобальный -->
-        <div style="grid-column: 1 / -1; margin-top: 4px;">
-          <label class="field-label" style="margin-top: 0;">Риск на сделку (необязательно)</label>
-          <div class="trade-risk-row">
-            <input type="number" class="mono-input" id="add-risk-amount" placeholder="—" step="any" style="flex:1;">
-            <div class="pnl-mode-switch" id="add-risk-type-switch">
-              <button class="pnl-mode-btn active" data-rtype="r">R</button>
-              <button class="pnl-mode-btn" data-rtype="usd">$</button>
-              <button class="pnl-mode-btn" data-rtype="pct">%</button>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -1186,14 +1186,19 @@ document.getElementById('detail-delete-btn').addEventListener('click', async () 
 let addTradeDirection = 'long';
 let addTradeOutcome = null; // 'win' | 'loss' | 'breakeven' | null
 let addTradeTags = [];      // выбранные теги сетапа/сессии
-let addTradeRiskType = 'r'; // 'r' | 'usd' | 'pct'
+let addRRType = 'r'; // 'r' | 'usd' | 'pct' — тип ввода поля Result R
 
-// Переключатель типа риска в форме сделки
-document.querySelectorAll('#add-risk-type-switch .pnl-mode-btn').forEach(btn => {
+// Переключатель типа ввода RR
+document.querySelectorAll('#add-rr-type-switch .pnl-mode-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    addTradeRiskType = btn.dataset.rtype;
-    document.querySelectorAll('#add-risk-type-switch .pnl-mode-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.rtype === addTradeRiskType));
+    addRRType = btn.dataset.rrtype;
+    document.querySelectorAll('#add-rr-type-switch .pnl-mode-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.rrtype === addRRType));
+    // Обновляем подсказку
+    const hint = document.getElementById('rr-hint');
+    if (addRRType === 'r') hint.textContent = 'Вводи как положительное число — знак определяется результатом ниже';
+    else if (addRRType === 'usd') hint.textContent = 'Сумма в $ — будет конвертирована в R через риск из настроек';
+    else hint.textContent = 'Процент от депозита — будет конвертирован в R через депозит из настроек';
   });
 });
 
@@ -1260,10 +1265,6 @@ async function fillAddTradeForm(trade) {
   document.getElementById('add-exit-price').value = trade.exit_price ?? '';
   document.getElementById('add-size').value = trade.size ?? '';
   document.getElementById('add-leverage').value = trade.leverage ?? '';
-  document.getElementById('add-risk-amount').value = trade.risk_amount ?? '';
-  addTradeRiskType = trade.risk_type || 'r';
-  document.querySelectorAll('#add-risk-type-switch .pnl-mode-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.rtype === addTradeRiskType));
 
   // Если хотя бы одно из полей деталей заполнено — сразу раскрываем блок,
   // чтобы при редактировании не приходилось искать, куда делись данные
@@ -1307,10 +1308,10 @@ async function resetAddTradeForm() {
   document.getElementById('add-exit-price').value = '';
   document.getElementById('add-size').value = '';
   document.getElementById('add-leverage').value = '';
-  document.getElementById('add-risk-amount').value = '';
-  addTradeRiskType = 'r';
-  document.querySelectorAll('#add-risk-type-switch .pnl-mode-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.rtype === 'r'));
+  addRRType = 'r';
+  document.querySelectorAll('#add-rr-type-switch .pnl-mode-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.rrtype === 'r'));
+  document.getElementById('rr-hint').textContent = 'Вводи как положительное число — знак определяется результатом ниже';
   setDetailsToggle(false);
 
   document.getElementById('add-symbol-new-wrapper').classList.add('hidden');
@@ -1418,24 +1419,32 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
   const exitRaw = document.getElementById('add-exit-price').value;
   const sizeRaw = document.getElementById('add-size').value;
   const leverageRaw = document.getElementById('add-leverage').value;
-  const riskAmountRaw = document.getElementById('add-risk-amount').value;
 
-  if (!symbol) {
-    alert('Укажи актив');
-    return;
-  }
-  if (!tradeDate) {
-    alert('Укажи дату сделки');
-    return;
-  }
+  if (!symbol) { alert('Укажи актив'); return; }
+  if (!tradeDate) { alert('Укажи дату сделки'); return; }
 
-  // R вводится как положительное число — знак берём из выбранного результата,
-  // а не из самого числа: убыток всегда уходит в минус, без убытка — всегда 0.
-  let resultR = resultRRaw ? Math.abs(parseFloat(resultRRaw)) : null;
-  if (resultR !== null) {
-    if (addTradeOutcome === 'loss') resultR = -resultR;
-    else if (addTradeOutcome === 'breakeven') resultR = 0;
-    // 'win' или не выбрано — оставляем положительным как есть
+  // Конвертируем введённое значение в R
+  let resultR = null;
+  if (resultRRaw) {
+    const raw = Math.abs(parseFloat(resultRRaw));
+    if (addRRType === 'r') {
+      resultR = raw;
+    } else if (addRRType === 'usd') {
+      const riskUsd = getRiskUsd();
+      if (!riskUsd) { alert('Укажи риск в $ в настройках для конвертации'); return; }
+      resultR = raw / riskUsd;
+    } else if (addRRType === 'pct') {
+      const dep = getDeposit();
+      const riskUsd = getRiskUsd();
+      if (!dep || !riskUsd) { alert('Укажи депозит и риск $ в настройках для конвертации'); return; }
+      const usd = (raw / 100) * dep;
+      resultR = usd / riskUsd;
+    }
+    // Применяем знак из результата
+    if (resultR !== null) {
+      if (addTradeOutcome === 'loss') resultR = -resultR;
+      else if (addTradeOutcome === 'breakeven') resultR = 0;
+    }
   }
 
   const payload = {
@@ -1451,8 +1460,6 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
     exit_price: exitRaw ? parseFloat(exitRaw) : null,
     size: sizeRaw ? parseFloat(sizeRaw) : null,
     leverage: leverageRaw ? parseFloat(leverageRaw) : null,
-    risk_amount: riskAmountRaw ? parseFloat(riskAmountRaw) : null,
-    risk_type: riskAmountRaw ? addTradeRiskType : null,
   };
 
   try {

@@ -1710,3 +1710,16 @@ label.field-label:first-child { margin-top: 0; }
 .trade-risk-row input {
   min-width: 0;
 }
+
+/* Строка Result R с переключателем */
+.result-r-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.result-r-row input {
+  flex: 1;
+  min-width: 0;
+}
