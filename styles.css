@@ -1598,22 +1598,24 @@ label.field-label:first-child { margin-top: 0; }
 
 /* ============ Модал шейр-карточки ============ */
 
+#share-card-overlay {
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
 .share-card-modal {
   background: var(--surface);
   border-radius: 20px 20px 0 0;
   padding: 20px 20px 36px;
   width: 100%;
   max-width: 480px;
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
   animation: slideUp .25s ease;
 }
 
 @keyframes slideUp {
-  from { transform: translateX(-50%) translateY(100%); }
-  to   { transform: translateX(-50%) translateY(0); }
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
 .share-card-preview {
