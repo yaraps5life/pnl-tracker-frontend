@@ -1214,7 +1214,7 @@ function loadSettings() {
 
 // ---------- Шаринг журнала ----------
 
-const SHARE_BASE = 'https://yaraps5life.github.io/pnl-tracker-frontend/share.html?token=';
+const SHARE_BASE = 'https://tracker-pnl-production.up.railway.app/s/';
 
 function applyShareUI(token) {
   const linkRow = document.getElementById('share-link-row');
@@ -1223,8 +1223,7 @@ function applyShareUI(token) {
   const input = document.getElementById('share-link-input');
 
   if (token) {
-    input.value = SHARE_BASE + token;
-    linkRow.classList.remove('hidden');
+    input.value = SHARE_BASE + token;    linkRow.classList.remove('hidden');
     generateBtn.textContent = '🔗 Обновить ссылку';
     revokeBtn.classList.remove('hidden');
   } else {
