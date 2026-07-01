@@ -168,6 +168,19 @@ body {
   color: var(--text);
 }
 
+/* Иконки в шапке дашборда — в стиле таб-бара */
+.hdr-icon-btn {
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+}
+
+.hdr-icon-btn:hover,
+.hdr-icon-btn.active {
+  color: var(--accent);
+  background: none;
+}
+
 /* ============ Карточки ============ */
 
 .card {
