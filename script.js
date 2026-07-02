@@ -678,7 +678,7 @@ function renderTradeRow(t) {
   const isLong = t.direction === 'long';
   const date = (t.trade_date || t.created_at || '—').split('T')[0].split(' ')[0];
   const entry = t.entry_price ? ` · ${t.entry_price}` : '';
-  const pnlText = fmtPnlForTrade(t.result_r, t.risk_amount, t.risk_type);
+  const pnlText = fmtPnlForTrade(t.result_r, t.pnl_usd, t.pnl_pct);
   return `
     <div class="trade-row" data-trade-id="${t.id}">
       <div class="trade-left">
@@ -689,7 +689,10 @@ function renderTradeRow(t) {
         </div>
       </div>
       <div class="trade-right">
-        <div class="trade-pnl ${pnlClass(t.result_r)}" data-result-r="${t.result_r ?? ''}" data-risk-amount="${t.risk_amount ?? ''}" data-risk-type="${t.risk_type ?? ''}">${pnlText}</div>
+        <div class="trade-pnl ${pnlClass(t.result_r)}"
+          data-result-r="${t.result_r ?? ''}"
+          data-pnl-usd="${t.pnl_usd ?? ''}"
+          data-pnl-pct="${t.pnl_pct ?? ''}">${pnlText}</div>
         <div class="trade-r ${outcomeClass(t.outcome)}">${outcomeLabel(t.outcome)}</div>
       </div>
     </div>
@@ -738,45 +741,38 @@ function riskToUsd(amount, type) {
   return amount * getRiskUsd();
 }
 
-// Форматирует PnL для конкретной сделки — с учётом её индивидуального риска
-function fmtPnlForTrade(resultR, tradeRiskAmount, tradeRiskType) {
-  if (resultR === null || resultR === undefined) return '—';
-  if (pnlMode === 'r') return fmtR(resultR);
-
-  // Определяем риск в $: сначала индивидуальный, потом глобальный
-  let riskUsd = 0;
-  if (tradeRiskAmount && tradeRiskType) {
-    riskUsd = riskToUsd(tradeRiskAmount, tradeRiskType);
-  } else {
-    riskUsd = getRiskUsd();
-    if (!riskUsd && pnlMode === 'pct') {
-      // Если риск % и нет $ риска — пробуем через % от депозита
-      const riskPct = parseFloat(localStorage.getItem('pnl_risk_pct') || '0') || 0;
-      if (riskPct) {
-        const pct = resultR * riskPct;
-        return (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
-      }
-      return fmtR(resultR);
-    }
-  }
-
+// Форматирует PnL для конкретной сделки
+// Берёт зафиксированные значения напрямую — настройки не влияют
+function fmtPnlForTrade(resultR, pnlUsd, pnlPct) {
   if (pnlMode === 'usd') {
-    if (!riskUsd) return fmtR(resultR);
-    const usd = resultR * riskUsd;
-    return (usd > 0 ? '+' : '') + usd.toFixed(0) + '$';
+    if (pnlUsd !== null && pnlUsd !== undefined && pnlUsd !== '') {
+      const v = parseFloat(pnlUsd);
+      return (v > 0 ? '+' : '') + v.toFixed(0) + '$';
+    }
+    // Если $ не зафиксирован — пробуем посчитать из R и глобального риска
+    if (resultR !== null && resultR !== undefined) {
+      const riskUsd = getRiskUsd();
+      if (riskUsd) {
+        const v = resultR * riskUsd;
+        return (v > 0 ? '+' : '') + v.toFixed(0) + '$';
+      }
+    }
+    return fmtR(resultR);
   }
   if (pnlMode === 'pct') {
-    const dep = getDeposit();
-    if (!dep || !riskUsd) {
-      // Фолбэк на глобальный %
-      const riskPct = parseFloat(localStorage.getItem('pnl_risk_pct') || '0') || 0;
-      if (!riskPct) return fmtR(resultR);
-      const pct = resultR * riskPct;
-      return (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+    if (pnlPct !== null && pnlPct !== undefined && pnlPct !== '') {
+      const v = parseFloat(pnlPct);
+      return (v > 0 ? '+' : '') + v.toFixed(2) + '%';
     }
-    const usd = resultR * riskUsd;
-    const pct = (usd / dep) * 100;
-    return (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+    // Фолбэк на глобальный риск %
+    if (resultR !== null && resultR !== undefined) {
+      const riskPct = parseFloat(localStorage.getItem('pnl_risk_pct') || '0') || 0;
+      if (riskPct) {
+        const v = resultR * riskPct;
+        return (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+      }
+    }
+    return fmtR(resultR);
   }
   return fmtR(resultR);
 }
@@ -795,9 +791,9 @@ function setPnlMode(mode) {
   // Обновляем уже отрисованные строки сделок на дашборде
   document.querySelectorAll('.trade-pnl[data-result-r]').forEach((el) => {
     const r = el.dataset.resultR === '' ? null : parseFloat(el.dataset.resultR);
-    const ra = el.dataset.riskAmount === '' ? null : parseFloat(el.dataset.riskAmount);
-    const rt = el.dataset.riskType || null;
-    el.textContent = fmtPnlForTrade(r, ra, rt);
+    const usd = el.dataset.pnlUsd === '' ? null : parseFloat(el.dataset.pnlUsd);
+    const pct = el.dataset.pnlPct === '' ? null : parseFloat(el.dataset.pnlPct);
+    el.textContent = fmtPnlForTrade(r, usd, pct);
     el.className = `trade-pnl ${pnlClass(r)}`;
   });
   renderJournalTable();
@@ -935,7 +931,7 @@ function renderTableRow(t) {
       <td class="cell-date">${dateStr}</td>
       <td class="cell-symbol">${t.symbol}</td>
       <td><span class="cell-direction ${isLong ? 'long' : 'short'}">${isLong ? 'лонг' : 'шорт'}</span></td>
-      <td class="cell-r">${fmtPnl(t.result_r)}</td>
+      <td class="cell-r">${fmtPnlForTrade(t.result_r, t.pnl_usd, t.pnl_pct)}</td>
       <td><span class="cell-result ${resultClass}"><span class="result-dot"></span>${resultLabel}</span></td>
     </tr>
   `;
@@ -1434,28 +1430,32 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
   if (!symbol) { alert('Укажи актив'); return; }
   if (!tradeDate) { alert('Укажи дату сделки'); return; }
 
-  // Конвертируем введённое значение в R
-  let resultR = null;
+  // Конвертируем введённое значение — считаем все три и фиксируем навсегда
+  let resultR = null, pnlUsd = null, pnlPct = null;
   if (resultRRaw) {
     const raw = Math.abs(parseFloat(resultRRaw));
+    const riskUsd = getRiskUsd();
+    const dep = getDeposit();
+
     if (addRRType === 'r') {
       resultR = raw;
+      if (riskUsd) pnlUsd = raw * riskUsd;
+      if (riskUsd && dep) pnlPct = (pnlUsd / dep) * 100;
     } else if (addRRType === 'usd') {
-      const riskUsd = getRiskUsd();
-      if (!riskUsd) { alert('Укажи риск в $ в настройках для конвертации'); return; }
-      resultR = raw / riskUsd;
+      pnlUsd = raw;
+      if (riskUsd) resultR = raw / riskUsd;
+      if (dep) pnlPct = (raw / dep) * 100;
     } else if (addRRType === 'pct') {
-      const dep = getDeposit();
-      const riskUsd = getRiskUsd();
-      if (!dep || !riskUsd) { alert('Укажи депозит и риск $ в настройках для конвертации'); return; }
-      const usd = (raw / 100) * dep;
-      resultR = usd / riskUsd;
+      pnlPct = raw;
+      if (dep) pnlUsd = (raw / 100) * dep;
+      if (dep && riskUsd) resultR = pnlUsd / riskUsd;
     }
+
     // Применяем знак из результата
-    if (resultR !== null) {
-      if (addTradeOutcome === 'loss') resultR = -resultR;
-      else if (addTradeOutcome === 'breakeven') resultR = 0;
-    }
+    const sign = addTradeOutcome === 'loss' ? -1 : addTradeOutcome === 'breakeven' ? 0 : 1;
+    if (resultR !== null) resultR = sign === 0 ? 0 : sign * Math.abs(resultR);
+    if (pnlUsd !== null) pnlUsd = sign === 0 ? 0 : sign * Math.abs(pnlUsd);
+    if (pnlPct !== null) pnlPct = sign === 0 ? 0 : sign * Math.abs(pnlPct);
   }
 
   const payload = {
@@ -1467,6 +1467,8 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
     trade_date: `${tradeDate}T${tradeTime}:00`,
     note: note || null,
     tags: addTradeTags,
+    pnl_usd: pnlUsd,
+    pnl_pct: pnlPct,
     entry_price: entryRaw ? parseFloat(entryRaw) : null,
     exit_price: exitRaw ? parseFloat(exitRaw) : null,
     size: sizeRaw ? parseFloat(sizeRaw) : null,
