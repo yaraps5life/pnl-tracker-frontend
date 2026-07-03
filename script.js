@@ -1542,15 +1542,108 @@ async function loadAnalytics() {
   }
 }
 
-// ---------- Подключение биржи ----------
-// Примечание: эндпоинтов /exchange/* пока нет на бэкенде — это заглушка интерфейса,
-// которую нужно подключить, когда будет готова синхронизация с Binance API.
+// ---------- Подключение биржи (BingX) ----------
 
 document.getElementById('exchange-back-btn').addEventListener('click', () => showScreen('settings'));
-document.getElementById('settings-exchange-row').addEventListener('click', () => showScreen('exchange'));
+document.getElementById('settings-exchange-row').addEventListener('click', () => {
+  showScreen('exchange');
+  loadExchangeStatus();
+});
 
-document.getElementById('exchange-connect-btn').addEventListener('click', () => {
-  alert('Синхронизация с Binance ещё не подключена на бэкенде — это следующий шаг разработки.');
+async function loadExchangeStatus() {
+  const statusText = document.getElementById('exchange-status-text');
+  statusText.textContent = 'Проверка...';
+  statusText.className = 'exchange-sub';
+
+  try {
+    const data = await apiGet('/exchange/bingx/status');
+    const formWrap = document.getElementById('exchange-form-wrap');
+    const connWrap = document.getElementById('exchange-connected-wrap');
+    const syncWrap = document.getElementById('exchange-sync-wrap');
+
+    if (data.connected) {
+      statusText.textContent = 'Подключено ✓';
+      statusText.className = 'exchange-sub connected';
+      formWrap.classList.add('hidden');
+      connWrap.classList.remove('hidden');
+      syncWrap.classList.remove('hidden');
+      if (data.last_sync) {
+        document.getElementById('exchange-last-sync-text').textContent = `Последняя синхронизация: ${data.last_sync}`;
+      }
+    } else {
+      statusText.textContent = 'Не подключено';
+      statusText.className = 'exchange-sub disconnected';
+      formWrap.classList.remove('hidden');
+      connWrap.classList.add('hidden');
+      syncWrap.classList.add('hidden');
+    }
+  } catch (e) {
+    statusText.textContent = 'Ошибка загрузки';
+  }
+}
+
+document.getElementById('exchange-connect-btn').addEventListener('click', async () => {
+  const apiKey = document.getElementById('exchange-api-key').value.trim();
+  const secretKey = document.getElementById('exchange-secret-key').value.trim();
+
+  if (!apiKey || !secretKey) {
+    alert('Введи оба ключа');
+    return;
+  }
+
+  const btn = document.getElementById('exchange-connect-btn');
+  btn.textContent = 'Подключаем...';
+  btn.disabled = true;
+
+  try {
+    const data = await apiPost('/exchange/bingx/connect', { api_key: apiKey, secret_key: secretKey });
+    tg?.HapticFeedback?.notificationOccurred('success');
+    document.getElementById('exchange-balance-card').textContent = `Баланс: ${data.balance} ${data.currency}`;
+    document.getElementById('exchange-api-key').value = '';
+    document.getElementById('exchange-secret-key').value = '';
+    await loadExchangeStatus();
+  } catch (e) {
+    alert(`Ошибка: ${e.message}`);
+  } finally {
+    btn.textContent = 'Подключить';
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('exchange-sync-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('exchange-sync-btn');
+  btn.textContent = '⏳ Синхронизация...';
+  btn.disabled = true;
+
+  try {
+    const data = await apiPost('/exchange/bingx/sync', {});
+    tg?.HapticFeedback?.notificationOccurred('success');
+    await loadExchangeStatus();
+    await loadDashboard();
+    alert(`Готово! Добавлено: ${data.added} сделок, пропущено (дубли): ${data.skipped}`);
+  } catch (e) {
+    alert(`Ошибка синхронизации: ${e.message}`);
+  } finally {
+    btn.textContent = '↻ Синхронизировать';
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('exchange-disconnect-btn').addEventListener('click', async () => {
+  const confirmed = await showConfirmModal({
+    title: 'Отключить BingX?',
+    text: 'API ключи будут удалены. Уже импортированные сделки останутся.',
+    confirmLabel: 'Отключить',
+  });
+  if (!confirmed) return;
+
+  try {
+    await apiDelete('/exchange/bingx/disconnect');
+    await loadExchangeStatus();
+    tg?.HapticFeedback?.notificationOccurred('success');
+  } catch (e) {
+    alert('Ошибка отключения');
+  }
 });
 
 // ---------- Настройки ----------

@@ -1349,6 +1349,17 @@ label.field-label:first-child { margin-top: 0; }
 .exchange-sub.connected { color: var(--success); }
 .exchange-sub.disconnected { color: var(--text-muted); }
 
+.exchange-balance-card {
+  padding: 12px 14px;
+  background: var(--success-bg);
+  border-radius: var(--radius-sm);
+  color: var(--success);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
 .security-note {
   display: flex;
   align-items: flex-start;
