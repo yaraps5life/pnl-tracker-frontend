@@ -1624,7 +1624,7 @@ document.getElementById('exchange-sync-btn').addEventListener('click', async () 
     tg?.HapticFeedback?.notificationOccurred('success');
     await loadExchangeStatus();
     await loadDashboard();
-    alert(`Готово! Добавлено: ${data.added} сделок, пропущено (дубли): ${data.skipped}`);
+    alert(`Готово!\nДобавлено: ${data.added}\nПропущено (дубли/нули): ${data.skipped}\nВсего позиций: ${data.total_fetched}\n${data.debug || ''}`);
   } catch (e) {
     alert(`Ошибка синхронизации: ${e.message}`);
   } finally {
