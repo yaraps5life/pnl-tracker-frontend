@@ -1314,6 +1314,7 @@ async function resetAddTradeForm() {
 
   document.getElementById('add-result-r').value = '';
   document.getElementById('add-note').value = '';
+  clearAttachments('add');
 
   document.getElementById('add-entry-price').value = '';
   document.getElementById('add-exit-price').value = '';
@@ -1812,7 +1813,10 @@ document.getElementById('settings-delete-row').addEventListener('click', async (
   }, 1200);
 })();
 
-// ---------- Голосовой ввод заметки ----------
+// ---------- Голосовой ввод + вложения заметки ----------
+
+// Хранилище вложений: { 'add' | 'detail' } -> [{ dataUrl, name }]
+const noteAttachments = { add: [], detail: [] };
 
 function setupMicButton(btnId, textareaId) {
   const btn = document.getElementById(btnId);
@@ -1821,9 +1825,9 @@ function setupMicButton(btnId, textareaId) {
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    btn.title = 'Голосовой ввод не поддерживается в этом браузере';
     btn.style.opacity = '0.3';
     btn.disabled = true;
+    btn.title = 'Голосовой ввод не поддерживается';
     return;
   }
 
@@ -1832,10 +1836,7 @@ function setupMicButton(btnId, textareaId) {
 
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-    if (isRecording) {
-      recognition.stop();
-      return;
-    }
+    if (isRecording) { recognition.stop(); return; }
 
     recognition = new SpeechRecognition();
     recognition.lang = 'ru-RU';
@@ -1851,19 +1852,17 @@ function setupMicButton(btnId, textareaId) {
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      const current = textarea.value;
-      textarea.value = current ? current + ' ' + transcript : transcript;
+      const cur = textarea.value;
+      textarea.value = cur ? cur + ' ' + transcript : transcript;
       textarea.dispatchEvent(new Event('input'));
     };
 
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-    };
+    recognition.onerror = () => {};
 
     recognition.onend = () => {
       isRecording = false;
       btn.classList.remove('recording');
-      btn.textContent = '🎤';
+      btn.textContent = '🎙';
       tg?.HapticFeedback?.impactOccurred('light');
     };
 
@@ -1871,5 +1870,85 @@ function setupMicButton(btnId, textareaId) {
   });
 }
 
+function setupAttachButton(btnId, inputId, containerId, scope) {
+  const btn = document.getElementById(btnId);
+  const input = document.getElementById(inputId);
+  const container = document.getElementById(containerId);
+  if (!btn || !input || !container) return;
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    input.click();
+  });
+
+  input.addEventListener('change', () => {
+    const files = Array.from(input.files);
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        noteAttachments[scope].push({ dataUrl, name: file.name });
+        renderAttachments(container, scope);
+        tg?.HapticFeedback?.impactOccurred('light');
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  });
+}
+
+function renderAttachments(container, scope) {
+  container.innerHTML = '';
+  noteAttachments[scope].forEach((att, idx) => {
+    const item = document.createElement('div');
+    item.className = 'note-attachment-item';
+
+    const img = document.createElement('img');
+    img.src = att.dataUrl;
+    img.alt = att.name;
+    img.addEventListener('click', () => openLightbox(att.dataUrl));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'note-attachment-remove';
+    removeBtn.textContent = '✕';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      noteAttachments[scope].splice(idx, 1);
+      renderAttachments(container, scope);
+    });
+
+    item.appendChild(img);
+    item.appendChild(removeBtn);
+    container.appendChild(item);
+  });
+}
+
+function openLightbox(src) {
+  const lb = document.getElementById('attachment-lightbox');
+  const img = document.getElementById('attachment-lightbox-img');
+  img.src = src;
+  lb.classList.add('open');
+}
+
+document.getElementById('attachment-lightbox')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    e.currentTarget.classList.remove('open');
+  }
+});
+document.getElementById('attachment-lightbox-close')?.addEventListener('click', () => {
+  document.getElementById('attachment-lightbox').classList.remove('open');
+});
+
+// Сброс вложений при открытии форм
+function clearAttachments(scope) {
+  noteAttachments[scope] = [];
+  const containerId = scope === 'add' ? 'add-attachments' : 'detail-attachments';
+  const container = document.getElementById(containerId);
+  if (container) container.innerHTML = '';
+}
+
 setupMicButton('detail-mic-btn', 'detail-note');
 setupMicButton('add-mic-btn', 'add-note');
+setupAttachButton('detail-attach-btn', 'detail-attach-input', 'detail-attachments', 'detail');
+setupAttachButton('add-attach-btn', 'add-attach-input', 'add-attachments', 'add');
