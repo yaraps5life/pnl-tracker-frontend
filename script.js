@@ -751,14 +751,14 @@ function fmtPnlForTrade(resultR, pnlUsd, pnlPct) {
   if (pnlMode === 'usd') {
     if (pnlUsd !== null && pnlUsd !== undefined && pnlUsd !== '') {
       const v = parseFloat(pnlUsd);
-      return (v > 0 ? '+' : '') + v.toFixed(0) + '$';
+      return (v > 0 ? '+' : '') + v.toFixed(2) + '$';
     }
     // Если $ не зафиксирован — пробуем посчитать из R и глобального риска
     if (resultR !== null && resultR !== undefined) {
       const riskUsd = getRiskUsd();
       if (riskUsd) {
         const v = resultR * riskUsd;
-        return (v > 0 ? '+' : '') + v.toFixed(0) + '$';
+        return (v > 0 ? '+' : '') + v.toFixed(2) + '$';
       }
     }
     return fmtR(resultR);
@@ -1620,7 +1620,8 @@ document.getElementById('exchange-sync-btn').addEventListener('click', async () 
   btn.disabled = true;
 
   try {
-    const data = await apiPost('/exchange/bingx/sync', {});
+    const riskUsd = getRiskUsd() || null;
+    const data = await apiPost('/exchange/bingx/sync', { risk_usd: riskUsd });
     tg?.HapticFeedback?.notificationOccurred('success');
     await loadExchangeStatus();
     await loadDashboard();
