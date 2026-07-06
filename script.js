@@ -1867,7 +1867,7 @@ function setupMicButton(btnId, textareaId) {
     recognition.onstart = () => {
       isRecording = true;
       btn.classList.add('recording');
-      btn.textContent = '⏹';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
       tg?.HapticFeedback?.impactOccurred('light');
     };
 
@@ -1883,7 +1883,7 @@ function setupMicButton(btnId, textareaId) {
     recognition.onend = () => {
       isRecording = false;
       btn.classList.remove('recording');
-      btn.textContent = '🎙';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3M8 22h8"/></svg>';
       tg?.HapticFeedback?.impactOccurred('light');
     };
 
