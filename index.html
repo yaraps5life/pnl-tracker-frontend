@@ -232,7 +232,10 @@
 
     <div class="section">
       <div class="section-label">Заметка</div>
-      <textarea id="detail-note" rows="4" placeholder="Почему вошёл, что по плану, что не по плану..."></textarea>
+      <div class="note-input-wrap">
+        <textarea id="detail-note" rows="4" placeholder="Почему вошёл, что по плану, что не по плану..."></textarea>
+        <button class="mic-btn" id="detail-mic-btn" title="Голосовой ввод">🎤</button>
+      </div>
       <button class="btn btn-secondary btn-block" id="detail-save-note-btn" style="margin-top: 10px;">Сохранить заметку</button>
     </div>
 
@@ -325,7 +328,10 @@
       </div>
 
       <label class="field-label">Заметка (необязательно)</label>
-      <textarea id="add-note" rows="3" placeholder="Контекст входа..."></textarea>
+      <div class="note-input-wrap">
+        <textarea id="add-note" rows="3" placeholder="Контекст входа..."></textarea>
+        <button class="mic-btn" id="add-mic-btn" title="Голосовой ввод">🎤</button>
+      </div>
 
       <button class="btn btn-primary btn-block" id="add-submit-btn" style="margin-top: 18px;">Добавить сделку</button>
     </div>
