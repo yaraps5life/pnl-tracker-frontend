@@ -1839,6 +1839,9 @@ document.getElementById('settings-delete-row').addEventListener('click', async (
 // Хранилище вложений: { 'add' | 'detail' } -> [{ dataUrl, name }]
 const noteAttachments = { add: [], detail: [] };
 
+const MIC_SVG = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3M8 22h8"/></svg>`;
+const STOP_SVG = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
+
 function setupMicButton(btnId, textareaId) {
   const btn = document.getElementById(btnId);
   const textarea = document.getElementById(textareaId);
@@ -1855,39 +1858,69 @@ function setupMicButton(btnId, textareaId) {
   let recognition = null;
   let isRecording = false;
 
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (isRecording) { recognition.stop(); return; }
-
+  function startRecording() {
     recognition = new SpeechRecognition();
     recognition.lang = 'ru-RU';
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = false;      // одна фраза за раз — стабильнее в Telegram WebView
+    recognition.interimResults = false;  // только финальный текст, без промежуточных
 
     recognition.onstart = () => {
       isRecording = true;
       btn.classList.add('recording');
-      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+      btn.innerHTML = STOP_SVG;
       tg?.HapticFeedback?.impactOccurred('light');
     };
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      const cur = textarea.value;
-      textarea.value = cur ? cur + ' ' + transcript : transcript;
-      textarea.dispatchEvent(new Event('input'));
+      const transcript = Array.from(event.results)
+        .map(r => r[0].transcript)
+        .join(' ')
+        .trim();
+      if (transcript) {
+        const cur = textarea.value;
+        textarea.value = cur ? cur + ' ' + transcript : transcript;
+        textarea.dispatchEvent(new Event('input'));
+      }
     };
 
-    recognition.onerror = () => {};
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed') {
+        alert('Нет доступа к микрофону. Разреши доступ в настройках.');
+      }
+      // no-speech — просто ничего не сказали, не показываем ошибку
+      stopRecording();
+    };
 
     recognition.onend = () => {
-      isRecording = false;
-      btn.classList.remove('recording');
-      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3M8 22h8"/></svg>';
-      tg?.HapticFeedback?.impactOccurred('light');
+      // continuous=false: запись завершилась сама после паузы — просто останавливаем
+      stopRecording();
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch(e) {
+      stopRecording();
+    }
+  }
+
+  function stopRecording() {
+    isRecording = false;
+    btn.classList.remove('recording');
+    btn.innerHTML = MIC_SVG;
+    tg?.HapticFeedback?.impactOccurred('light');
+    if (recognition) {
+      try { recognition.stop(); } catch(e) {}
+      recognition = null;
+    }
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
   });
 }
 
