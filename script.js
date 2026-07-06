@@ -1927,6 +1927,11 @@ function setupAttachButton(btnId, inputId, containerId, scope) {
 
         noteAttachments[scope].push(att);
         renderAttachments(container, scope, scope === 'detail' ? currentTradeId : null);
+        // Показываем секцию скриншотов при первом добавлении
+        if (scope === 'detail') {
+          const section = document.getElementById('detail-screenshots-section');
+          if (section) section.style.display = '';
+        }
         tg?.HapticFeedback?.impactOccurred('light');
       };
       reader.readAsDataURL(file);
@@ -1951,11 +1956,9 @@ function renderAttachments(container, scope, tradeId = null) {
     removeBtn.textContent = '✕';
     removeBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      // Удаляем с сервера если есть id
       if (att.id && tradeId) {
-        try {
-          await apiDelete(`/trades/${tradeId}/attachments/${att.id}`);
-        } catch (e) { console.error(e); }
+        try { await apiDelete(`/trades/${tradeId}/attachments/${att.id}`); }
+        catch (e) { console.error(e); }
       }
       noteAttachments[scope].splice(idx, 1);
       renderAttachments(container, scope, tradeId);
@@ -1965,6 +1968,14 @@ function renderAttachments(container, scope, tradeId = null) {
     item.appendChild(removeBtn);
     container.appendChild(item);
   });
+
+  // Показываем/прячем секцию скриншотов в detail
+  if (scope === 'detail') {
+    const section = document.getElementById('detail-screenshots-section');
+    if (section) {
+      section.style.display = noteAttachments[scope].length > 0 ? '' : 'none';
+    }
+  }
 }
 
 // Рендер вложений загруженных с сервера (уже имеют id)
@@ -2000,3 +2011,9 @@ setupMicButton('detail-mic-btn', 'detail-note');
 setupMicButton('add-mic-btn', 'add-note');
 setupAttachButton('detail-attach-btn', 'detail-attach-input', 'detail-attachments', 'detail');
 setupAttachButton('add-attach-btn', 'add-attach-input', 'add-attachments', 'add');
+
+// Кнопка "+ Добавить скриншот" в секции скриншотов тоже открывает file input
+document.getElementById('detail-screenshots-add-btn')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('detail-attach-input')?.click();
+});
