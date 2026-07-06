@@ -882,12 +882,17 @@ function renderJournalTable() {
   rows.sort((a, b) => {
     let va, vb;
     if (journalSortColumn === 'trade_date') {
-      va = a.trade_date || a.created_at || '';
-      vb = b.trade_date || b.created_at || '';
+      // Парсим дату в timestamp для корректного числового сравнения
+      va = new Date(a.trade_date || a.created_at || 0).getTime();
+      vb = new Date(b.trade_date || b.created_at || 0).getTime();
     } else if (journalSortColumn === 'result') {
       const rank = { win: 2, breakeven: 1, loss: 0 };
       va = rank[a.outcome] ?? -1;
       vb = rank[b.outcome] ?? -1;
+    } else if (journalSortColumn === 'result_r') {
+      // Для R используем pnl_usd как запасной вариант
+      va = a.result_r ?? a.pnl_usd ?? 0;
+      vb = b.result_r ?? b.pnl_usd ?? 0;
     } else {
       va = a[journalSortColumn] ?? '';
       vb = b[journalSortColumn] ?? '';
@@ -896,7 +901,8 @@ function renderJournalTable() {
     if (typeof vb === 'string') vb = vb.toLowerCase();
     if (va < vb) return journalSortDir === 'asc' ? -1 : 1;
     if (va > vb) return journalSortDir === 'asc' ? 1 : -1;
-    return 0;
+    // Вторичный ключ: при равных значениях всегда сортируем по id desc (новые сверху)
+    return b.id - a.id;
   });
 
   if (rows.length === 0) {
