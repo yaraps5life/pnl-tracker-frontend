@@ -1761,29 +1761,34 @@ label.field-label:first-child { margin-top: 0; }
   width: 28px;
   height: 28px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface-3);
+  border: none;
+  background: transparent;
   color: var(--text-muted);
-  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  line-height: 1;
+  transition: color 0.15s;
   padding: 0;
   flex-shrink: 0;
 }
 
+.note-icon-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+}
+
 .note-icon-btn:hover {
-  background: var(--surface-2);
   color: var(--text);
-  border-color: var(--accent);
 }
 
 .note-icon-btn.recording {
-  background: rgba(229, 57, 53, 0.15);
-  border-color: #e53935;
   color: #e53935;
   animation: mic-pulse 1s infinite;
 }
