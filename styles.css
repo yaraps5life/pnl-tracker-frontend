@@ -1734,3 +1734,48 @@ label.field-label:first-child { margin-top: 0; }
   flex: 1;
   min-width: 0;
 }
+
+/* --- Голосовой ввод заметки --- */
+.note-input-wrap {
+  position: relative;
+}
+
+.note-input-wrap textarea {
+  width: 100%;
+  padding-right: 44px;
+  box-sizing: border-box;
+}
+
+.mic-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-secondary, #2a2a2a);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.mic-btn:hover {
+  opacity: 1;
+}
+
+.mic-btn.recording {
+  background: #e53935;
+  opacity: 1;
+  animation: mic-pulse 1s infinite;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
