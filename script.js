@@ -1811,3 +1811,65 @@ document.getElementById('settings-delete-row').addEventListener('click', async (
     showScreen('dashboard');
   }, 1200);
 })();
+
+// ---------- Голосовой ввод заметки ----------
+
+function setupMicButton(btnId, textareaId) {
+  const btn = document.getElementById(btnId);
+  const textarea = document.getElementById(textareaId);
+  if (!btn || !textarea) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    btn.title = 'Голосовой ввод не поддерживается в этом браузере';
+    btn.style.opacity = '0.3';
+    btn.disabled = true;
+    return;
+  }
+
+  let recognition = null;
+  let isRecording = false;
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isRecording) {
+      recognition.stop();
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ru-RU';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      isRecording = true;
+      btn.classList.add('recording');
+      btn.textContent = '⏹';
+      tg?.HapticFeedback?.impactOccurred('light');
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const current = textarea.value;
+      textarea.value = current ? current + ' ' + transcript : transcript;
+      textarea.dispatchEvent(new Event('input'));
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+    };
+
+    recognition.onend = () => {
+      isRecording = false;
+      btn.classList.remove('recording');
+      btn.textContent = '🎤';
+      tg?.HapticFeedback?.impactOccurred('light');
+    };
+
+    recognition.start();
+  });
+}
+
+setupMicButton('detail-mic-btn', 'detail-note');
+setupMicButton('add-mic-btn', 'add-note');
