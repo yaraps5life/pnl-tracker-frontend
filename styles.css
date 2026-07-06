@@ -1735,47 +1735,150 @@ label.field-label:first-child { margin-top: 0; }
   min-width: 0;
 }
 
-/* --- Голосовой ввод заметки --- */
+/* --- Голосовой ввод + вложения заметки --- */
 .note-input-wrap {
   position: relative;
 }
 
 .note-input-wrap textarea {
   width: 100%;
-  padding-right: 44px;
+  padding-bottom: 40px; /* место для кнопок снизу */
   box-sizing: border-box;
+  resize: vertical;
 }
 
-.mic-btn {
+/* Панель кнопок внутри рамки textarea */
+.note-actions {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: var(--bg-secondary, #2a2a2a);
-  font-size: 16px;
+  bottom: 7px;
+  right: 7px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.note-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text-muted);
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
 }
 
-.mic-btn:hover {
-  opacity: 1;
+.note-icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--accent);
 }
 
-.mic-btn.recording {
-  background: #e53935;
-  opacity: 1;
+.note-icon-btn.recording {
+  background: rgba(229, 57, 53, 0.15);
+  border-color: #e53935;
+  color: #e53935;
   animation: mic-pulse 1s infinite;
 }
 
 @keyframes mic-pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  50% { transform: scale(1.08); }
+}
+
+/* Превью прикреплённых скриншотов */
+.note-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.note-attachment-item {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+
+.note-attachment-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.note-attachment-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.note-attachment-remove:hover {
+  background: #e53935;
+}
+
+/* Полноэкранный просмотр скриншота */
+.attachment-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.attachment-lightbox.open {
+  display: flex;
+}
+
+.attachment-lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius);
+  object-fit: contain;
+}
+
+.attachment-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
