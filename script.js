@@ -1066,6 +1066,17 @@ async function openTradeDetail(tradeId) {
     renderDetailTags(t.tags || []);
     document.getElementById('detail-note').value = t.note || '';
 
+    // Загружаем сохранённые вложения
+    clearAttachments('detail');
+    try {
+      const attachments = await apiGet(`/trades/${tradeId}/attachments`);
+      const container = document.getElementById('detail-attachments');
+      attachments.forEach(att => {
+        noteAttachments['detail'].push({ dataUrl: att.data, name: att.filename, id: att.id });
+      });
+      renderAttachmentsFromServer(container, 'detail', tradeId);
+    } catch (e) { /* игнорируем */ }
+
     await updateFavoriteStar(t.symbol);
   } catch (e) {
     console.error('Не удалось загрузить сделку', e);
@@ -1496,7 +1507,17 @@ document.getElementById('add-submit-btn').addEventListener('click', async () => 
         // не вводить его руками
         await apiPost(`/favorites/${encodeURIComponent(symbol)}`, {});
       }
-      await apiPost('/trades', { ...payload, source: 'manual' });
+      const newTrade = await apiPost('/trades', { ...payload, source: 'manual' });
+      // Сохраняем вложения если есть
+      if (noteAttachments['add'].length > 0 && newTrade?.trade?.id) {
+        await Promise.all(noteAttachments['add'].map(att =>
+          apiPost(`/trades/${newTrade.trade.id}/attachments`, {
+            filename: att.name,
+            mime_type: att.mime || 'image/jpeg',
+            data: att.dataUrl,
+          }).catch(() => {})
+        ));
+      }
       tg?.HapticFeedback?.notificationOccurred('success');
       resetAddTradeForm();
       showScreen('dashboard');
@@ -1886,10 +1907,26 @@ function setupAttachButton(btnId, inputId, containerId, scope) {
     files.forEach(file => {
       if (!file.type.startsWith('image/')) return;
       const reader = new FileReader();
-      reader.onload = (ev) => {
+      reader.onload = async (ev) => {
         const dataUrl = ev.target.result;
-        noteAttachments[scope].push({ dataUrl, name: file.name });
-        renderAttachments(container, scope);
+        const att = { dataUrl, name: file.name, mime: file.type };
+
+        // Если detail scope и есть открытая сделка — сразу сохраняем на сервер
+        if (scope === 'detail' && currentTradeId) {
+          try {
+            const resp = await apiPost(`/trades/${currentTradeId}/attachments`, {
+              filename: file.name,
+              mime_type: file.type,
+              data: dataUrl,
+            });
+            att.id = resp.id;
+          } catch (e) {
+            console.error('Не удалось сохранить вложение', e);
+          }
+        }
+
+        noteAttachments[scope].push(att);
+        renderAttachments(container, scope, scope === 'detail' ? currentTradeId : null);
         tg?.HapticFeedback?.impactOccurred('light');
       };
       reader.readAsDataURL(file);
@@ -1898,7 +1935,7 @@ function setupAttachButton(btnId, inputId, containerId, scope) {
   });
 }
 
-function renderAttachments(container, scope) {
+function renderAttachments(container, scope, tradeId = null) {
   container.innerHTML = '';
   noteAttachments[scope].forEach((att, idx) => {
     const item = document.createElement('div');
@@ -1912,16 +1949,27 @@ function renderAttachments(container, scope) {
     const removeBtn = document.createElement('button');
     removeBtn.className = 'note-attachment-remove';
     removeBtn.textContent = '✕';
-    removeBtn.addEventListener('click', (e) => {
+    removeBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
+      // Удаляем с сервера если есть id
+      if (att.id && tradeId) {
+        try {
+          await apiDelete(`/trades/${tradeId}/attachments/${att.id}`);
+        } catch (e) { console.error(e); }
+      }
       noteAttachments[scope].splice(idx, 1);
-      renderAttachments(container, scope);
+      renderAttachments(container, scope, tradeId);
     });
 
     item.appendChild(img);
     item.appendChild(removeBtn);
     container.appendChild(item);
   });
+}
+
+// Рендер вложений загруженных с сервера (уже имеют id)
+function renderAttachmentsFromServer(container, scope, tradeId) {
+  renderAttachments(container, scope, tradeId);
 }
 
 function openLightbox(src) {
