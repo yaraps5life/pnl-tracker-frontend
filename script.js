@@ -378,6 +378,7 @@ async function loadDashboard(params = '') {
     window._dashRCurve = stats.r_curve || [];
     updateDashPnlDisplay();
 
+    console.log('r_curve:', stats.r_curve);
     drawEquityCurve(document.getElementById('dash-equity-chart'), stats.r_curve);
 
     // Последние сделки показываем только на вкладке "Всё"
