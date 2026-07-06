@@ -234,8 +234,13 @@
       <div class="section-label">Заметка</div>
       <div class="note-input-wrap">
         <textarea id="detail-note" rows="4" placeholder="Почему вошёл, что по плану, что не по плану..."></textarea>
-        <button class="mic-btn" id="detail-mic-btn" title="Голосовой ввод">🎤</button>
+        <div class="note-actions">
+          <button class="note-icon-btn" id="detail-attach-btn" title="Прикрепить скриншот">📎</button>
+          <button class="note-icon-btn" id="detail-mic-btn" title="Голосовой ввод">🎙</button>
+        </div>
       </div>
+      <input type="file" id="detail-attach-input" accept="image/*" multiple style="display:none">
+      <div class="note-attachments" id="detail-attachments"></div>
       <button class="btn btn-secondary btn-block" id="detail-save-note-btn" style="margin-top: 10px;">Сохранить заметку</button>
     </div>
 
@@ -330,8 +335,13 @@
       <label class="field-label">Заметка (необязательно)</label>
       <div class="note-input-wrap">
         <textarea id="add-note" rows="3" placeholder="Контекст входа..."></textarea>
-        <button class="mic-btn" id="add-mic-btn" title="Голосовой ввод">🎤</button>
+        <div class="note-actions">
+          <button class="note-icon-btn" id="add-attach-btn" title="Прикрепить скриншот">📎</button>
+          <button class="note-icon-btn" id="add-mic-btn" title="Голосовой ввод">🎙</button>
+        </div>
       </div>
+      <input type="file" id="add-attach-input" accept="image/*" multiple style="display:none">
+      <div class="note-attachments" id="add-attachments"></div>
 
       <button class="btn btn-primary btn-block" id="add-submit-btn" style="margin-top: 18px;">Добавить сделку</button>
     </div>
@@ -547,5 +557,10 @@
 </div>
 
 <script src="script.js?v=20260702"></script>
+  <!-- Lightbox для скриншотов -->
+  <div class="attachment-lightbox" id="attachment-lightbox">
+    <button class="attachment-lightbox-close" id="attachment-lightbox-close">✕</button>
+    <img id="attachment-lightbox-img" src="" alt="">
+  </div>
 </body>
 </html>
