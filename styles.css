@@ -2524,3 +2524,105 @@ label.field-label:first-child { margin-top: 0; }
 }
 
 .ps-add-btn:hover { background: #E8E8E8; }
+
+/* ============ Шторка Новое Портфолио ============ */
+
+.np-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #00BCD4;
+  border-radius: 12px;
+  font-size: 16px;
+  color: #111;
+  background: #fff;
+  box-sizing: border-box;
+  outline: none;
+  font-family: var(--font-body);
+}
+
+.np-input:focus { border-color: #00BCD4; }
+
+.np-colors {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.np-color {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.np-color.active {
+  border-color: #fff;
+  outline: 3px solid currentColor;
+  transform: scale(1.08);
+}
+
+.np-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F5F5F5;
+  border-radius: 14px;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.np-toggle {
+  position: relative;
+  width: 50px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.np-toggle input { display: none; }
+
+.np-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.np-toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.np-toggle input:checked + .np-toggle-slider { background: #4CAF50; }
+.np-toggle input:checked + .np-toggle-slider::after { transform: translateX(22px); }
+
+.np-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: #E0E0E0;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #999;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.np-submit-btn.ready {
+  background: #5B8DEF;
+  color: #fff;
+}
