@@ -2879,11 +2879,42 @@ label.field-label:first-child { margin-top: 0; }
 
 .add-asset-input::placeholder { color: var(--text-muted); }
 
-.add-asset-input-unit {
-  font-size: 14px;
+.add-asset-input-unit { display: none; } /* убрали старый */
+
+.add-asset-unit-badge {
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
-  flex-shrink: 0;
+}
+
+.add-asset-inline-field {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  background: var(--surface-1);
+  gap: 10px;
+}
+
+.add-asset-inline-field.hidden { display: none; }
+
+.add-asset-notes-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
+  font-family: var(--font-body);
+  resize: none;
+  min-height: 60px;
 }
 
 /* Рынок / Custom */
