@@ -27,7 +27,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260726r">
+<link rel="stylesheet" href="styles.css?v=20260726s">
 </head>
 <body>
 
@@ -719,7 +719,7 @@
   </div>
 </div>
 
-<script src="script.js?v=20260726r"></script>
+<script src="script.js?v=20260726s"></script>
   <!-- Lightbox для скриншотов -->
   <div class="attachment-lightbox" id="attachment-lightbox">
     <button class="attachment-lightbox-close" id="attachment-lightbox-close">✕</button>
@@ -752,14 +752,14 @@
         <div class="add-asset-field-label">Сумма</div>
         <div class="add-asset-input-row">
           <input type="number" id="portfolio-amount-input" class="add-asset-input" placeholder="0" step="any">
-          <span class="add-asset-input-unit" id="add-asset-unit">BTC</span>
+          <span class="add-asset-unit-badge" id="add-asset-unit">BTC</span>
         </div>
 
         <!-- Цена -->
         <div class="add-asset-field-label">Цена</div>
         <div class="add-asset-input-row">
           <input type="number" id="portfolio-price-input" class="add-asset-input" placeholder="0.00" step="any">
-          <span class="add-asset-input-unit">USD</span>
+          <span class="add-asset-unit-badge">USD</span>
         </div>
         <div class="add-asset-price-toggle">
           <button class="add-asset-price-btn active" id="add-asset-market-btn">Рынок</button>
@@ -770,12 +770,12 @@
         <div class="add-asset-field-label">Всего</div>
         <div class="add-asset-input-row">
           <input type="number" id="portfolio-total-input" class="add-asset-input" placeholder="0" step="any">
-          <span class="add-asset-input-unit">USD</span>
+          <span class="add-asset-unit-badge">USD</span>
         </div>
 
-        <!-- Дата -->
+        <!-- Дата / Время / Комиссия / Заметки -->
         <div class="add-asset-rows-card">
-          <div class="add-asset-row-item">
+          <div class="add-asset-row-item" onclick="document.getElementById('portfolio-date-input').showPicker?.() || document.getElementById('portfolio-date-input').click()">
             <span class="add-asset-row-label">Дата</span>
             <div class="add-asset-row-right">
               <span id="add-asset-date-display"></span>
@@ -783,7 +783,7 @@
             </div>
             <input type="date" id="portfolio-date-input" class="add-asset-date-hidden">
           </div>
-          <div class="add-asset-row-item">
+          <div class="add-asset-row-item" onclick="document.getElementById('portfolio-time-input').showPicker?.() || document.getElementById('portfolio-time-input').click()">
             <span class="add-asset-row-label">Время</span>
             <div class="add-asset-row-right">
               <span id="add-asset-time-display"></span>
@@ -791,6 +791,29 @@
             </div>
             <input type="time" id="portfolio-time-input" class="add-asset-date-hidden">
           </div>
+          <div class="add-asset-row-item" id="add-asset-commission-row">
+            <span class="add-asset-row-label">Комиссия</span>
+            <div class="add-asset-row-right">
+              <span id="add-asset-commission-display" style="color:var(--text-muted);font-size:13px;"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+          <div class="add-asset-row-item" id="add-asset-notes-row">
+            <span class="add-asset-row-label">Заметки</span>
+            <div class="add-asset-row-right">
+              <span id="add-asset-notes-display" style="color:var(--text-muted);font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Инлайн поля для комиссии и заметок (раскрываются при тапе) -->
+        <div class="add-asset-inline-field hidden" id="commission-field">
+          <input type="number" class="add-asset-input" id="portfolio-commission-input" placeholder="0.00" step="any">
+          <span class="add-asset-unit-badge">USD</span>
+        </div>
+        <div class="add-asset-inline-field hidden" id="notes-field">
+          <textarea id="portfolio-notes-input" class="add-asset-notes-input" placeholder="Добавить заметку..."></textarea>
         </div>
       </div>
 
