@@ -27,7 +27,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260726n">
+<link rel="stylesheet" href="styles.css?v=20260726o">
 </head>
 <body>
 
@@ -270,79 +270,7 @@
 
     <!-- Модалка добавления монеты -->
     <!-- Экран добавления актива в спот портфель -->
-    <div class="screen" id="screen-add-asset">
-      <div class="add-asset-header">
-        <button class="add-asset-back" id="add-asset-back">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <div class="add-asset-header-coin">
-          <img class="add-asset-coin-icon" id="add-asset-coin-icon" src="" alt="">
-          <div class="add-asset-coin-placeholder" id="add-asset-coin-placeholder"></div>
-          <span class="add-asset-coin-name" id="add-asset-coin-name">Bitcoin</span>
-          <span class="add-asset-coin-ticker" id="add-asset-coin-ticker">BTC</span>
-        </div>
-      </div>
 
-      <!-- Табы Покупка / Продажа -->
-      <div class="add-asset-tabs">
-        <button class="add-asset-tab active" data-type="buy">Покупка</button>
-        <button class="add-asset-tab" data-type="sell">Продажа</button>
-        <button class="add-asset-tab" data-type="transfer">Трансфер</button>
-      </div>
-
-      <div class="add-asset-body">
-        <!-- Сумма -->
-        <div class="add-asset-field-label">Сумма</div>
-        <div class="add-asset-input-row">
-          <input type="number" id="portfolio-amount-input" class="add-asset-input" placeholder="0" step="any">
-          <span class="add-asset-input-unit" id="add-asset-unit">BTC</span>
-        </div>
-
-        <!-- Цена -->
-        <div class="add-asset-field-label">Цена</div>
-        <div class="add-asset-input-row">
-          <input type="number" id="portfolio-price-input" class="add-asset-input" placeholder="0.00" step="any">
-          <span class="add-asset-input-unit">USD</span>
-        </div>
-        <div class="add-asset-price-toggle">
-          <button class="add-asset-price-btn active" id="add-asset-market-btn">Рынок</button>
-          <button class="add-asset-price-btn" id="add-asset-custom-btn">Custom</button>
-        </div>
-
-        <!-- Всего -->
-        <div class="add-asset-field-label">Всего</div>
-        <div class="add-asset-input-row">
-          <input type="number" id="portfolio-total-input" class="add-asset-input" placeholder="0" step="any">
-          <span class="add-asset-input-unit">USD</span>
-        </div>
-
-        <!-- Дата -->
-        <div class="add-asset-rows-card">
-          <div class="add-asset-row-item">
-            <span class="add-asset-row-label">Дата</span>
-            <div class="add-asset-row-right">
-              <span id="add-asset-date-display"></span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-            <input type="date" id="portfolio-date-input" class="add-asset-date-hidden">
-          </div>
-          <div class="add-asset-row-item">
-            <span class="add-asset-row-label">Время</span>
-            <div class="add-asset-row-right">
-              <span id="add-asset-time-display"></span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-            <input type="time" id="portfolio-time-input" class="add-asset-date-hidden">
-          </div>
-        </div>
-      </div>
-
-      <div class="add-asset-footer">
-        <button class="add-asset-submit" id="portfolio-modal-submit">Добавить транзакцию</button>
-      </div>
-
-      <input type="hidden" id="portfolio-symbol-input">
-    </div>
 
     <div class="section hidden" id="dash-empty-state">
       <div class="empty-state">
@@ -791,11 +719,87 @@
   </div>
 </div>
 
-<script src="script.js?v=20260726n"></script>
+<script src="script.js?v=20260726o"></script>
   <!-- Lightbox для скриншотов -->
   <div class="attachment-lightbox" id="attachment-lightbox">
     <button class="attachment-lightbox-close" id="attachment-lightbox-close">✕</button>
     <img id="attachment-lightbox-img" src="" alt="">
   </div>
+
+  <!-- Экран добавления актива (спот) -->
+  <div class="screen" id="screen-add-asset">
+      <div class="add-asset-header">
+        <button class="add-asset-back" id="add-asset-back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="add-asset-header-coin">
+          <img class="add-asset-coin-icon" id="add-asset-coin-icon" src="" alt="">
+          <div class="add-asset-coin-placeholder" id="add-asset-coin-placeholder"></div>
+          <span class="add-asset-coin-name" id="add-asset-coin-name">Bitcoin</span>
+          <span class="add-asset-coin-ticker" id="add-asset-coin-ticker">BTC</span>
+        </div>
+      </div>
+
+      <!-- Табы Покупка / Продажа -->
+      <div class="add-asset-tabs">
+        <button class="add-asset-tab active" data-type="buy">Покупка</button>
+        <button class="add-asset-tab" data-type="sell">Продажа</button>
+        <button class="add-asset-tab" data-type="transfer">Трансфер</button>
+      </div>
+
+      <div class="add-asset-body">
+        <!-- Сумма -->
+        <div class="add-asset-field-label">Сумма</div>
+        <div class="add-asset-input-row">
+          <input type="number" id="portfolio-amount-input" class="add-asset-input" placeholder="0" step="any">
+          <span class="add-asset-input-unit" id="add-asset-unit">BTC</span>
+        </div>
+
+        <!-- Цена -->
+        <div class="add-asset-field-label">Цена</div>
+        <div class="add-asset-input-row">
+          <input type="number" id="portfolio-price-input" class="add-asset-input" placeholder="0.00" step="any">
+          <span class="add-asset-input-unit">USD</span>
+        </div>
+        <div class="add-asset-price-toggle">
+          <button class="add-asset-price-btn active" id="add-asset-market-btn">Рынок</button>
+          <button class="add-asset-price-btn" id="add-asset-custom-btn">Custom</button>
+        </div>
+
+        <!-- Всего -->
+        <div class="add-asset-field-label">Всего</div>
+        <div class="add-asset-input-row">
+          <input type="number" id="portfolio-total-input" class="add-asset-input" placeholder="0" step="any">
+          <span class="add-asset-input-unit">USD</span>
+        </div>
+
+        <!-- Дата -->
+        <div class="add-asset-rows-card">
+          <div class="add-asset-row-item">
+            <span class="add-asset-row-label">Дата</span>
+            <div class="add-asset-row-right">
+              <span id="add-asset-date-display"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <input type="date" id="portfolio-date-input" class="add-asset-date-hidden">
+          </div>
+          <div class="add-asset-row-item">
+            <span class="add-asset-row-label">Время</span>
+            <div class="add-asset-row-right">
+              <span id="add-asset-time-display"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <input type="time" id="portfolio-time-input" class="add-asset-date-hidden">
+          </div>
+        </div>
+      </div>
+
+      <div class="add-asset-footer">
+        <button class="add-asset-submit" id="portfolio-modal-submit">Добавить транзакцию</button>
+      </div>
+
+      <input type="hidden" id="portfolio-symbol-input">
+    </div>
+
 </body>
 </html>
