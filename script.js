@@ -2293,6 +2293,11 @@ const _origLoadDashboard = loadDashboard;
 loadDashboard = async function(params = '') {
   await _origLoadDashboard(params);
   loadPortfolio();
+  // Загружаем кастомные портфели только один раз
+  if (!window._portfoliosLoaded) {
+    window._portfoliosLoaded = true;
+    loadUserPortfolios();
+  }
 };
 
 // ============ Шторка Все Портфолио ============
@@ -2351,3 +2356,174 @@ document.getElementById('ps-spot')?.addEventListener('click', () => {
   document.getElementById('ps-spot-check')?.classList.remove('hidden');
   document.getElementById('ps-trading-check')?.classList.add('hidden');
 });
+
+// ============ Создание нового портфеля ============
+
+let selectedPortfolioColor = '#00BCD4';
+
+// Открыть шторку нового портфеля
+document.getElementById('ps-add-portfolio-btn')?.addEventListener('click', () => {
+  closePortfoliosSheet();
+  document.getElementById('new-portfolio-overlay').classList.remove('hidden');
+  document.getElementById('new-portfolio-name').value = '';
+  document.getElementById('np-include').checked = true;
+  // Сброс цвета
+  selectedPortfolioColor = '#00BCD4';
+  document.querySelectorAll('.np-color').forEach(b => b.classList.toggle('active', b.dataset.color === selectedPortfolioColor));
+  document.querySelector('.np-submit-btn').classList.remove('ready');
+});
+
+document.getElementById('new-portfolio-close')?.addEventListener('click', () => {
+  document.getElementById('new-portfolio-overlay').classList.add('hidden');
+});
+
+document.getElementById('new-portfolio-overlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+});
+
+// Выбор цвета
+document.querySelectorAll('.np-color').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedPortfolioColor = btn.dataset.color;
+    document.querySelectorAll('.np-color').forEach(b => b.classList.toggle('active', b === btn));
+    // Активируем кнопку если имя заполнено
+    checkNpReady();
+  });
+});
+
+// Активация кнопки при вводе имени
+document.getElementById('new-portfolio-name')?.addEventListener('input', checkNpReady);
+
+function checkNpReady() {
+  const name = document.getElementById('new-portfolio-name').value.trim();
+  document.getElementById('new-portfolio-submit').classList.toggle('ready', name.length > 0);
+}
+
+// Создать портфель
+document.getElementById('new-portfolio-submit')?.addEventListener('click', async () => {
+  const name = document.getElementById('new-portfolio-name').value.trim();
+  if (!name) return;
+  const include = document.getElementById('np-include').checked;
+
+  try {
+    const p = await apiPost('/portfolios', {
+      name, color: selectedPortfolioColor, include_in_summary: include, type: 'custom'
+    });
+    document.getElementById('new-portfolio-overlay').classList.add('hidden');
+    tg?.HapticFeedback?.notificationOccurred('success');
+    // Добавляем новый слайд в свайпер
+    addPortfolioSlide(p);
+  } catch(e) {
+    alert('Не удалось создать портфель');
+  }
+});
+
+// Добавить слайд в свайпер
+function addPortfolioSlide(portfolio) {
+  const slider = document.getElementById('dash-cards-slider');
+  const dotsWrap = document.querySelector('.dash-dots');
+  if (!slider || !dotsWrap) return;
+
+  const slide = document.createElement('div');
+  slide.className = 'dash-card-slide';
+  slide.dataset.portfolioId = portfolio.id;
+  slide.innerHTML = `
+    <div class="pnl-card">
+      <div class="pnl-card-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:${portfolio.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">
+            ${portfolio.name.slice(0,1).toUpperCase()}
+          </div>
+          <div class="pnl-card-label">${portfolio.name}</div>
+        </div>
+        <button class="note-icon-btn" onclick="deletePortfolioSlide(${portfolio.id}, this)" title="Удалить">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+      <div class="pnl-row">
+        <span class="pnl-value mono">—</span>
+      </div>
+      <div style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;">
+        Пока нет данных
+      </div>
+    </div>
+  `;
+  slider.appendChild(slide);
+
+  // Добавляем точку
+  const dot = document.createElement('span');
+  dot.className = 'dash-dot';
+  const idx = slider.children.length - 1;
+  dot.dataset.idx = idx;
+  dot.addEventListener('click', () => switchToSlide(idx));
+  dotsWrap.appendChild(dot);
+
+  // Переходим на новый слайд
+  setTimeout(() => switchToSlide(idx), 100);
+
+  // Обновляем шторку
+  addPortfolioToSheet(portfolio);
+}
+
+function addPortfolioToSheet(portfolio) {
+  const list = document.querySelector('.ps-list');
+  if (!list) return;
+  const initials = portfolio.name.slice(0,1).toUpperCase();
+  const item = document.createElement('div');
+  item.className = 'ps-item';
+  item.dataset.portfolioId = portfolio.id;
+  const idx = document.querySelectorAll('.dash-card-slide').length - 1;
+  item.innerHTML = `
+    <div class="ps-avatar" style="background:${portfolio.color};">
+      <span style="color:#fff;font-size:18px;font-weight:700;">${initials}</span>
+    </div>
+    <div class="ps-info">
+      <div class="ps-name">${portfolio.name}</div>
+      <div class="ps-sub">Кастомный портфель</div>
+    </div>
+    <div class="ps-right"><div class="ps-value">—</div></div>
+    <svg class="ps-check hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B8DEF" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  `;
+  item.addEventListener('click', () => {
+    closePortfoliosSheet();
+    switchToSlide(idx);
+  });
+  // Вставляем перед кнопкой добавления
+  const addBtn = document.getElementById('ps-add-portfolio-btn');
+  list.insertBefore(item, addBtn?.parentElement || null);
+}
+
+async function deletePortfolioSlide(portfolioId, btn) {
+  if (!confirm('Удалить портфель?')) return;
+  try {
+    await apiDelete(`/portfolios/${portfolioId}`);
+    const slide = btn.closest('.dash-card-slide');
+    if (slide) slide.remove();
+    // Пересчитываем индексы точек
+    const slider = document.getElementById('dash-cards-slider');
+    const dotsWrap = document.querySelector('.dash-dots');
+    dotsWrap.innerHTML = '';
+    Array.from(slider.children).forEach((s, i) => {
+      const dot = document.createElement('span');
+      dot.className = 'dash-dot' + (i === 0 ? ' active' : '');
+      dot.dataset.idx = i;
+      dot.addEventListener('click', () => switchToSlide(i));
+      dotsWrap.appendChild(dot);
+    });
+    switchToSlide(0);
+  } catch(e) { alert('Не удалось удалить'); }
+}
+
+// Загружаем портфели при старте и добавляем слайды
+async function loadUserPortfolios() {
+  try {
+    const portfolios = await apiGet('/portfolios');
+    portfolios.forEach(p => addPortfolioSlide(p));
+  } catch(e) { /* игнорируем */ }
+}
+
+// Вызываем при загрузке дашборда
+const __origLoad = loadDashboard;
+loadDashboard = async function(params = '') {
+  await __origLoad(params);
+};
