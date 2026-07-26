@@ -2235,3 +2235,48 @@ label.field-label:first-child { margin-top: 0; }
 .modal-body {
   padding: 16px;
 }
+
+/* ============ Свайп карточки дашборда ============ */
+
+.dash-cards-wrap {
+  position: relative;
+  overflow: hidden;
+  margin: 0 16px;
+}
+
+.dash-cards-slider {
+  display: flex;
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.dash-card-slide {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+.dash-card-slide .pnl-card {
+  margin: 0;
+}
+
+/* Точки */
+.dash-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dash-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.dash-dot.active {
+  background: var(--accent);
+  transform: scale(1.3);
+}
