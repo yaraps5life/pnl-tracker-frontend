@@ -117,6 +117,38 @@
       <div class="card" id="dash-recent-list" style="padding:4px 16px;"></div>
     </div>
 
+    <!-- Спотовый портфель -->
+    <div class="section" id="dash-portfolio-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="section-label" style="margin-bottom:0;">Спот портфель</div>
+        <button class="dash-action-btn-sm" id="dash-portfolio-add-btn">+ монета</button>
+      </div>
+      <div class="portfolio-total-row" id="dash-portfolio-total" style="display:none">
+        <span class="portfolio-total-value" id="dash-portfolio-value">—</span>
+        <span class="portfolio-total-pnl" id="dash-portfolio-pnl">—</span>
+      </div>
+      <div id="dash-portfolio-list"></div>
+    </div>
+
+    <!-- Модалка добавления монеты -->
+    <div class="modal-overlay hidden" id="portfolio-modal-overlay">
+      <div class="modal-sheet" id="portfolio-modal">
+        <div class="modal-header">
+          <span class="modal-title" id="portfolio-modal-title">Добавить монету</span>
+          <button class="modal-close-btn" id="portfolio-modal-close">✕</button>
+        </div>
+        <div class="modal-body">
+          <label class="field-label">Монета (тикер)</label>
+          <input type="text" class="mono-input" id="portfolio-symbol-input" placeholder="BTC, ETH, SOL..." style="text-transform:uppercase;margin-bottom:12px;">
+          <label class="field-label">Количество</label>
+          <input type="number" class="mono-input" id="portfolio-amount-input" placeholder="0.00" step="any" style="margin-bottom:12px;">
+          <label class="field-label">Средняя цена покупки (USD)</label>
+          <input type="number" class="mono-input" id="portfolio-price-input" placeholder="0.00" step="any" style="margin-bottom:20px;">
+          <button class="btn btn-primary btn-block" id="portfolio-modal-submit">Добавить</button>
+        </div>
+      </div>
+    </div>
+
     <div class="section hidden" id="dash-empty-state">
       <div class="empty-state">
         <div class="empty-icon">📊</div>
