@@ -2196,8 +2196,8 @@ label.field-label:first-child { margin-top: 0; }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 1000;
+  background: rgba(0,0,0,0.75);
+  z-index: 9000;
   display: flex;
   align-items: flex-end;
 }
