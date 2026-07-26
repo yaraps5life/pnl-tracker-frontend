@@ -2862,6 +2862,31 @@ document.querySelectorAll('.add-asset-tab').forEach(btn => {
 });
 
 // Рынок / Custom
+// Комиссия — раскрыть поле
+document.getElementById('add-asset-commission-row')?.addEventListener('click', () => {
+  const field = document.getElementById('commission-field');
+  field.classList.toggle('hidden');
+  if (!field.classList.contains('hidden')) document.getElementById('portfolio-commission-input').focus();
+});
+
+// Обновляем display комиссии
+document.getElementById('portfolio-commission-input')?.addEventListener('input', (e) => {
+  const v = e.target.value;
+  document.getElementById('add-asset-commission-display').textContent = v ? `$${v}` : '';
+});
+
+// Заметки — раскрыть поле
+document.getElementById('add-asset-notes-row')?.addEventListener('click', () => {
+  const field = document.getElementById('notes-field');
+  field.classList.toggle('hidden');
+  if (!field.classList.contains('hidden')) document.getElementById('portfolio-notes-input').focus();
+});
+
+// Обновляем display заметок
+document.getElementById('portfolio-notes-input')?.addEventListener('input', (e) => {
+  document.getElementById('add-asset-notes-display').textContent = e.target.value.slice(0, 30);
+});
+
 document.getElementById('add-asset-market-btn')?.addEventListener('click', () => {
   document.getElementById('add-asset-market-btn').classList.add('active');
   document.getElementById('add-asset-custom-btn').classList.remove('active');
