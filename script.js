@@ -2828,17 +2828,27 @@ function openAddAssetForm(symbol, name, price, iconUrl = '') {
   document.getElementById('add-asset-date-display').textContent = now.toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'});
   document.getElementById('add-asset-time-display').textContent = timeStr;
 
-  // Закрываем все возможные оверлеи
+  // Закрываем все оверлеи
   document.querySelectorAll('.ps-overlay, .modal-overlay').forEach(o => o.classList.add('hidden'));
-  // Показываем экран через showScreen
-  showScreen('add-asset');
-  // Скрываем таббар на этом экране
+  // Скрываем все экраны вручную
+  SCREENS.forEach(s => {
+    const el = document.getElementById('screen-' + s);
+    if (el) el.classList.remove('active');
+  });
+  // Показываем нужный экран напрямую
+  const addAssetScreen = document.getElementById('screen-add-asset');
+  if (addAssetScreen) {
+    addAssetScreen.classList.add('active');
+    addAssetScreen.style.display = 'flex';
+  }
   document.getElementById('tab-bar').classList.add('hidden');
   setTimeout(() => document.getElementById('portfolio-amount-input').focus(), 150);
 }
 
 // Назад
 document.getElementById('add-asset-back')?.addEventListener('click', () => {
+  const addAssetScreen = document.getElementById('screen-add-asset');
+  if (addAssetScreen) { addAssetScreen.classList.remove('active'); addAssetScreen.style.display = ''; }
   showScreen('dashboard');
 });
 
