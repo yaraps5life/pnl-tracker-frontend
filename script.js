@@ -2254,14 +2254,7 @@ async function loadPortfolio() {
 }
 
 // Открыть модалку
-document.getElementById('dash-portfolio-add-btn')?.addEventListener('click', () => { openAssetPicker(); }); function _old_unused_() {
-  editingAssetId = null;
-  document.getElementById('portfolio-modal-title').textContent = 'Добавить монету';
-  document.getElementById('portfolio-symbol-input').value = '';
-  document.getElementById('portfolio-amount-input').value = '';
-  document.getElementById('portfolio-price-input').value = '';
-  document.getElementById('portfolio-modal-overlay').classList.remove('hidden');
-});
+document.getElementById('dash-portfolio-add-btn')?.addEventListener('click', () => { openAssetPicker(); });
 
 document.getElementById('portfolio-modal-close')?.addEventListener('click', () => {
   document.getElementById('portfolio-modal-overlay').classList.add('hidden');
