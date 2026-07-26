@@ -2297,49 +2297,57 @@ loadDashboard = async function(params = '') {
 
 // ============ Шторка Все Портфолио ============
 
-document.getElementById('dash-portfolio-title-btn')?.addEventListener('click', () => {
+function openPortfoliosSheet() {
   document.getElementById('portfolios-sheet-overlay').classList.remove('hidden');
-});
+  // Подгружаем данные портфеля в шторку
+  apiGet('/portfolio').then(data => {
+    const val = document.getElementById('ps-spot-value');
+    const pnl = document.getElementById('ps-spot-pnl');
+    if (val) val.textContent = data.total_value ? '$' + data.total_value.toLocaleString('en', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
+    if (pnl) {
+      const sign = data.total_pnl >= 0 ? '+' : '';
+      pnl.textContent = data.total_value ? `${sign}${data.total_pnl_pct?.toFixed(2)}%` : '—';
+      pnl.className = 'ps-pnl ' + (data.total_pnl >= 0 ? 'positive' : 'negative');
+    }
+    const sub = document.getElementById('ps-spot-sub');
+    if (sub && data.assets?.length) sub.textContent = data.assets.length + ' ' + (data.assets.length === 1 ? 'актив' : 'актива');
+  }).catch(() => {});
+}
 
-document.getElementById('portfolios-sheet-close')?.addEventListener('click', () => {
+function closePortfoliosSheet() {
   document.getElementById('portfolios-sheet-overlay').classList.add('hidden');
-});
+}
 
+document.getElementById('dash-portfolio-title-btn')?.addEventListener('click', openPortfoliosSheet);
+document.getElementById('portfolios-sheet-close')?.addEventListener('click', closePortfoliosSheet);
 document.getElementById('portfolios-sheet-overlay')?.addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+  if (e.target === e.currentTarget) closePortfoliosSheet();
 });
 
-// Переключение между журналом и спотом через шторку
-document.getElementById('ps-trading')?.addEventListener('click', () => {
-  document.getElementById('portfolios-sheet-overlay').classList.add('hidden');
-  // Свайп на первую карточку
+function switchToSlide(idx) {
   const slider = document.getElementById('dash-cards-slider');
-  if (slider) {
-    slider.style.transform = 'translateX(0)';
-    document.querySelectorAll('.dash-dot').forEach((d, i) => d.classList.toggle('active', i === 0));
-  }
-  // Галочка
-  document.getElementById('ps-trading').classList.add('active');
-  document.getElementById('ps-spot').classList.remove('active');
-  document.querySelector('#ps-trading .portfolio-sheet-check')?.removeAttribute('style');
-  document.querySelector('#ps-spot .portfolio-sheet-check')?.setAttribute('style', 'display:none');
+  if (!slider) return;
+  const sw = window.innerWidth + 12;
+  slider.style.transition = 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
+  slider.style.transform = `translateX(-${idx * sw}px)`;
+  document.querySelectorAll('.dash-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+  if (idx === 1) loadPortfolio();
+  if (idx === 0) setTimeout(() => {
+    const canvas = document.getElementById('dash-equity-chart');
+    if (canvas && window._dashRCurve) drawEquityCurve(canvas, window._dashRCurve);
+  }, 380);
+}
+
+document.getElementById('ps-trading')?.addEventListener('click', () => {
+  closePortfoliosSheet();
+  switchToSlide(0);
+  document.getElementById('ps-trading-check')?.classList.remove('hidden');
+  document.getElementById('ps-spot-check')?.classList.add('hidden');
 });
 
 document.getElementById('ps-spot')?.addEventListener('click', () => {
-  document.getElementById('portfolios-sheet-overlay').classList.add('hidden');
-  // Свайп на вторую карточку
-  const slider = document.getElementById('dash-cards-slider');
-  if (slider) {
-    slider.style.transform = `translateX(-${window.innerWidth + 12}px)`;
-    document.querySelectorAll('.dash-dot').forEach((d, i) => d.classList.toggle('active', i === 1));
-  }
-  loadPortfolio();
-  // Галочка
-  document.getElementById('ps-spot').classList.add('active');
-  document.getElementById('ps-trading').classList.remove('active');
-  document.querySelector('#ps-spot .portfolio-sheet-check')?.removeAttribute('style');
-  document.querySelector('#ps-trading .portfolio-sheet-check')?.setAttribute('style', 'display:none');
+  closePortfoliosSheet();
+  switchToSlide(1);
+  document.getElementById('ps-spot-check')?.classList.remove('hidden');
+  document.getElementById('ps-trading-check')?.classList.add('hidden');
 });
-
-// Скрываем галочку у спота по умолчанию
-document.querySelector('#ps-spot .portfolio-sheet-check')?.setAttribute('style', 'display:none');
