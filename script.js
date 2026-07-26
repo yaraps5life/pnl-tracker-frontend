@@ -2107,3 +2107,114 @@ document.getElementById('detail-screenshots-add-btn')?.addEventListener('click',
   e.preventDefault();
   document.getElementById('detail-attach-input')?.click();
 });
+
+// ============ Спотовый портфель ============
+
+let editingAssetId = null;
+
+async function loadPortfolio() {
+  try {
+    const data = await apiGet('/portfolio');
+    const list = document.getElementById('dash-portfolio-list');
+    const totalRow = document.getElementById('dash-portfolio-total');
+
+    if (!data.assets.length) {
+      list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">Нет активов. Нажми «+ монета» чтобы добавить.</div>';
+      totalRow.style.display = 'none';
+      return;
+    }
+
+    // Итого
+    totalRow.style.display = 'flex';
+    document.getElementById('dash-portfolio-value').textContent = '$' + data.total_value.toLocaleString('en', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const pnlEl = document.getElementById('dash-portfolio-pnl');
+    const sign = data.total_pnl >= 0 ? '+' : '';
+    pnlEl.textContent = `${sign}$${data.total_pnl.toFixed(2)} (${sign}${data.total_pnl_pct.toFixed(2)}%)`;
+    pnlEl.className = 'portfolio-total-pnl ' + (data.total_pnl >= 0 ? 'positive' : 'negative');
+
+    // Список
+    list.innerHTML = data.assets.map(a => {
+      const sign = a.pnl >= 0 ? '+' : '';
+      const pnlClass = a.pnl >= 0 ? 'positive' : 'negative';
+      const iconUrl = `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${a.symbol.toLowerCase()}.png`;
+      return `
+        <div class="portfolio-row" data-asset-id="${a.id}">
+          <div class="portfolio-row-left">
+            <div class="trade-icon" style="background-image:url('${iconUrl}');background-size:22px;background-repeat:no-repeat;background-position:center;" data-fallback="${a.symbol.slice(0,2)}"></div>
+            <div>
+              <div class="portfolio-symbol">${a.symbol}</div>
+              <div class="portfolio-meta">${a.amount} · avg $${a.avg_price.toLocaleString('en', {maximumFractionDigits: 4})}</div>
+            </div>
+          </div>
+          <div class="portfolio-row-right">
+            <div class="portfolio-value">$${a.value.toLocaleString('en', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            <div class="portfolio-pnl ${pnlClass}">${sign}${a.pnl_pct.toFixed(2)}%</div>
+          </div>
+          <button class="portfolio-delete-btn" data-asset-id="${a.id}" title="Удалить">✕</button>
+        </div>`;
+    }).join('');
+
+    // Фикс иконок
+    list.querySelectorAll('.trade-icon[data-fallback]').forEach(el => {
+      const url = el.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/, '$1');
+      const img = new Image();
+      img.onerror = () => { el.textContent = el.dataset.fallback; el.style.backgroundImage = ''; };
+      img.src = url;
+    });
+
+    // Удаление
+    list.querySelectorAll('.portfolio-delete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.assetId;
+        await apiDelete(`/portfolio/${id}`);
+        loadPortfolio();
+      });
+    });
+
+  } catch (e) {
+    console.error('Не удалось загрузить портфель', e);
+  }
+}
+
+// Открыть модалку
+document.getElementById('dash-portfolio-add-btn')?.addEventListener('click', () => {
+  editingAssetId = null;
+  document.getElementById('portfolio-modal-title').textContent = 'Добавить монету';
+  document.getElementById('portfolio-symbol-input').value = '';
+  document.getElementById('portfolio-amount-input').value = '';
+  document.getElementById('portfolio-price-input').value = '';
+  document.getElementById('portfolio-modal-overlay').classList.remove('hidden');
+});
+
+document.getElementById('portfolio-modal-close')?.addEventListener('click', () => {
+  document.getElementById('portfolio-modal-overlay').classList.add('hidden');
+});
+
+document.getElementById('portfolio-modal-overlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+});
+
+document.getElementById('portfolio-modal-submit')?.addEventListener('click', async () => {
+  const symbol = document.getElementById('portfolio-symbol-input').value.trim().toUpperCase();
+  const amount = parseFloat(document.getElementById('portfolio-amount-input').value);
+  const price = parseFloat(document.getElementById('portfolio-price-input').value);
+
+  if (!symbol || !amount || !price) { alert('Заполни все поля'); return; }
+
+  try {
+    await apiPost('/portfolio', { symbol, amount, avg_price: price });
+    document.getElementById('portfolio-modal-overlay').classList.add('hidden');
+    loadPortfolio();
+    tg?.HapticFeedback?.notificationOccurred('success');
+  } catch (e) {
+    alert('Не удалось добавить монету');
+  }
+});
+
+// Загружаем портфель вместе с дашбордом
+const _origLoadDashboard = loadDashboard;
+loadDashboard = async function(params = '') {
+  await _origLoadDashboard(params);
+  loadPortfolio();
+};
