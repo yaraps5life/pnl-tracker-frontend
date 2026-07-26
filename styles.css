@@ -2750,7 +2750,7 @@ label.field-label:first-child { margin-top: 0; }
   overflow-y: auto;
 }
 
-#screen-add-asset.hidden { display: none !important; }
+
 
 .add-asset-header {
   display: flex;
