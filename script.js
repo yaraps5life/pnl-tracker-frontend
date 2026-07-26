@@ -2294,3 +2294,52 @@ loadDashboard = async function(params = '') {
   await _origLoadDashboard(params);
   loadPortfolio();
 };
+
+// ============ Шторка Все Портфолио ============
+
+document.getElementById('dash-portfolio-title-btn')?.addEventListener('click', () => {
+  document.getElementById('portfolios-sheet-overlay').classList.remove('hidden');
+});
+
+document.getElementById('portfolios-sheet-close')?.addEventListener('click', () => {
+  document.getElementById('portfolios-sheet-overlay').classList.add('hidden');
+});
+
+document.getElementById('portfolios-sheet-overlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+});
+
+// Переключение между журналом и спотом через шторку
+document.getElementById('ps-trading')?.addEventListener('click', () => {
+  document.getElementById('portfolios-sheet-overlay').classList.add('hidden');
+  // Свайп на первую карточку
+  const slider = document.getElementById('dash-cards-slider');
+  if (slider) {
+    slider.style.transform = 'translateX(0)';
+    document.querySelectorAll('.dash-dot').forEach((d, i) => d.classList.toggle('active', i === 0));
+  }
+  // Галочка
+  document.getElementById('ps-trading').classList.add('active');
+  document.getElementById('ps-spot').classList.remove('active');
+  document.querySelector('#ps-trading .portfolio-sheet-check')?.removeAttribute('style');
+  document.querySelector('#ps-spot .portfolio-sheet-check')?.setAttribute('style', 'display:none');
+});
+
+document.getElementById('ps-spot')?.addEventListener('click', () => {
+  document.getElementById('portfolios-sheet-overlay').classList.add('hidden');
+  // Свайп на вторую карточку
+  const slider = document.getElementById('dash-cards-slider');
+  if (slider) {
+    slider.style.transform = `translateX(-${window.innerWidth + 12}px)`;
+    document.querySelectorAll('.dash-dot').forEach((d, i) => d.classList.toggle('active', i === 1));
+  }
+  loadPortfolio();
+  // Галочка
+  document.getElementById('ps-spot').classList.add('active');
+  document.getElementById('ps-trading').classList.remove('active');
+  document.querySelector('#ps-spot .portfolio-sheet-check')?.removeAttribute('style');
+  document.querySelector('#ps-trading .portfolio-sheet-check')?.setAttribute('style', 'display:none');
+});
+
+// Скрываем галочку у спота по умолчанию
+document.querySelector('#ps-spot .portfolio-sheet-check')?.setAttribute('style', 'display:none');
