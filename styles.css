@@ -2263,7 +2263,13 @@ label.field-label:first-child { margin-top: 0; }
 
 .dash-card-slide .pnl-card {
   margin: 0;
-  height: 100%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-card-slide:nth-child(2) .pnl-card {
+  justify-content: space-between;
 }
 
 /* Точки */
