@@ -40,91 +40,75 @@
 
   <!-- ============ ДАШБОРД ============ -->
   <div class="screen" id="screen-dashboard">
-
-    <!-- Карточка портфеля -->
-    <div class="dash-portfolio-card" id="dash-pnl-card">
-
-      <!-- Шапка карточки: имя + аватар -->
-      <div class="dash-portfolio-header">
-        <div class="dash-portfolio-name">AlfaRadar</div>
-        <button class="dash-avatar-btn" id="dash-theme-btn" title="Сменить тему">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="7" width="20" height="14" rx="2"/>
-            <path d="M16 7V5a2 2 0 00-4 0v2M12 12v4M10 14h4"/>
-          </svg>
+    <div class="header">
+      <h1>AlfaRadar</h1>
+      <div style="display:flex;align-items:center;gap:2px;">
+        <button class="icon-btn hdr-icon-btn" id="dash-screenshot-btn" title="Сохранить карточку">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M8.5 3L7 5H3C2 5 1 6 1 7V17C1 18 2 19 3 19H19C20 19 21 18 21 17V7C21 6 20 5 19 5H15L13.5 3H8.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" fill="none"/><circle cx="11" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>
         </button>
-      </div>
-
-      <!-- Сумма + глаз -->
-      <div class="dash-portfolio-amount-row">
-        <span class="dash-portfolio-amount mono" id="dash-pnl">—</span>
-        <button class="dash-eye-btn" id="dash-hide-btn" title="Скрыть/показать">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" id="dash-eye-icon">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
+        <button class="icon-btn hdr-icon-btn" id="dash-theme-btn" title="Сменить тему">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3V1M11 21V19M3 11H1M21 11H19M5.6 5.6L4.2 4.2M17.8 17.8L16.4 16.4M5.6 16.4L4.2 17.8M17.8 4.2L16.4 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="11" cy="11" r="4" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>
         </button>
-      </div>
-
-      <!-- Переключатель режима -->
-      <div class="dash-pnl-mode-row">
-        <div class="pnl-mode-switch" id="dash-pnl-mode-switch">
-          <button class="pnl-mode-btn" data-mode="r">R</button>
-          <button class="pnl-mode-btn" data-mode="usd">$</button>
-          <button class="pnl-mode-btn" data-mode="pct">%</button>
-        </div>
-        <span class="dash-portfolio-label" id="dash-pnl-label">Суммарный R</span>
-      </div>
-
-      <!-- График -->
-      <canvas class="equity-chart" id="dash-equity-chart"></canvas>
-
-      <!-- Метрики -->
-      <div class="metrics-row">
-        <div class="metric-card">
-          <div class="metric-label">Винрейт</div>
-          <div class="metric-value mono" id="dash-winrate">—</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Profit factor</div>
-          <div class="metric-value mono" id="dash-pf">—</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Сделок</div>
-          <div class="metric-value mono" id="dash-count">—</div>
-        </div>
       </div>
     </div>
 
-    <!-- Таймфреймы -->
-    <div class="dash-timeframes">
+    <div class="dash-filter-row">
       <div class="dash-tabs" id="dash-tabs">
-        <button class="dash-tab active" data-view="all">All</button>
-        <button class="dash-tab" data-view="ytd">YTD</button>
-        <button class="dash-tab" data-view="year">1Y</button>
-        <button class="dash-tab" data-view="month">1M</button>
+        <button class="dash-tab active" data-view="all">Всё</button>
+        <button class="dash-tab" data-view="month">М</button>
+        <button class="dash-tab" data-view="year">Y</button>
         <button class="dash-tab" data-view="winrate">W/R</button>
       </div>
       <select class="dash-subfilter hidden" id="dash-subfilter"></select>
     </div>
 
-    <!-- Кнопки действий -->
+    <div class="section" id="dash-card-section">
+      <div class="pnl-card" id="dash-pnl-card">
+        <div class="pnl-card-top">
+          <div class="pnl-card-label" id="dash-pnl-label">Суммарный R</div>
+          <div class="pnl-mode-switch" id="dash-pnl-mode-switch">
+            <button class="pnl-mode-btn" data-mode="r">R</button>
+            <button class="pnl-mode-btn" data-mode="usd">$</button>
+            <button class="pnl-mode-btn" data-mode="pct">%</button>
+          </div>
+        </div>
+        <div class="pnl-row">
+          <span class="pnl-value mono" id="dash-pnl">—</span>
+          <button class="dash-eye-btn" id="dash-hide-btn" title="Скрыть/показать">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" id="dash-eye-icon">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <canvas class="equity-chart" id="dash-equity-chart"></canvas>
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-label">Винрейт</div>
+            <div class="metric-value mono" id="dash-winrate">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Profit factor</div>
+            <div class="metric-value mono" id="dash-pf">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Сделок</div>
+            <div class="metric-value mono" id="dash-count">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="dash-action-btns">
       <button class="dash-action-btn" id="dash-go-analytics-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/>
-        </svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>
         Аналитика
       </button>
       <button class="dash-action-btn" id="dash-go-journal-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/>
-        </svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/></svg>
         История
       </button>
     </div>
 
-    <!-- Последние сделки -->
     <div class="section" id="dash-recent-section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div class="section-label" style="margin-bottom:0;">Последние сделки</div>
