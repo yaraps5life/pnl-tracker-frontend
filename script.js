@@ -7,13 +7,6 @@ const API_URL = 'https://tracker-pnl-production.up.railway.app';
 
 // ---------- Telegram Mini App init ----------
 
-window.onerror = function(msg, src, line, col, err) {
-  document.body.innerHTML = `<div style="padding:20px;color:red;font-size:12px;word-break:break-all">
-    <b>JS ERROR:</b><br>${msg}<br>Line: ${line}:${col}<br>${err?.stack || ''}
-  </div>`;
-  return false;
-};
-
 const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready();
@@ -630,7 +623,7 @@ function getShareBlob(cb) {
   document.getElementById('share-canvas').toBlob(cb, 'image/png');
 }
 
-document.getElementById('dash-screenshot-btn')?.addEventListener('click', openShareCardModal);
+document.getElementById('dash-screenshot-btn').addEventListener('click', openShareCardModal);
 document.getElementById('share-card-close').addEventListener('click', closeShareCardModal);
 document.getElementById('share-card-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeShareCardModal();
