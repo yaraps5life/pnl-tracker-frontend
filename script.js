@@ -2267,7 +2267,8 @@ document.getElementById('portfolio-modal-submit')?.addEventListener('click', asy
 
   try {
     await apiPost('/portfolio', { symbol, amount, avg_price: price });
-    document.getElementById('portfolio-modal-overlay').classList.add('hidden');
+    document.getElementById('screen-add-asset').classList.remove('visible');
+    document.getElementById('tab-bar')?.classList.remove('hidden');
     loadPortfolio();
     tg?.HapticFeedback?.notificationOccurred('success');
   } catch (e) {
@@ -2830,26 +2831,17 @@ function openAddAssetForm(symbol, name, price, iconUrl = '') {
 
   // Закрываем все оверлеи
   document.querySelectorAll('.ps-overlay, .modal-overlay').forEach(o => o.classList.add('hidden'));
-  // Скрываем все экраны вручную
-  SCREENS.forEach(s => {
-    const el = document.getElementById('screen-' + s);
-    if (el) el.classList.remove('active');
-  });
-  // Показываем нужный экран напрямую
+  // Показываем экран поверх всего через fixed позиционирование
   const addAssetScreen = document.getElementById('screen-add-asset');
-  if (addAssetScreen) {
-    addAssetScreen.classList.add('active');
-    addAssetScreen.style.display = 'flex';
-  }
-  document.getElementById('tab-bar').classList.add('hidden');
+  if (addAssetScreen) addAssetScreen.classList.add('visible');
+  document.getElementById('tab-bar')?.classList.add('hidden');
   setTimeout(() => document.getElementById('portfolio-amount-input').focus(), 150);
 }
 
 // Назад
 document.getElementById('add-asset-back')?.addEventListener('click', () => {
-  const addAssetScreen = document.getElementById('screen-add-asset');
-  if (addAssetScreen) { addAssetScreen.classList.remove('active'); addAssetScreen.style.display = ''; }
-  showScreen('dashboard');
+  document.getElementById('screen-add-asset').classList.remove('visible');
+  document.getElementById('tab-bar')?.classList.remove('hidden');
 });
 
 // Дата/время display
