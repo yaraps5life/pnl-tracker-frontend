@@ -27,7 +27,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260726e">
+<link rel="stylesheet" href="styles.css?v=20260726f">
 </head>
 <body>
 
@@ -201,6 +201,48 @@
         <span id="dash-see-all-btn" style="font-size:12px;color:var(--accent);cursor:pointer;">все →</span>
       </div>
       <div class="card" id="dash-recent-list" style="padding:4px 16px;"></div>
+    </div>
+
+    <!-- Шторка создания нового портфеля -->
+    <div class="ps-overlay hidden" id="new-portfolio-overlay">
+      <div class="ps-sheet" id="new-portfolio-sheet">
+        <div class="ps-handle"></div>
+        <div class="ps-header">
+          <span class="ps-title">Новое портфолио</span>
+          <button class="ps-close" id="new-portfolio-close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="ps-body">
+          <div style="padding:0 20px 20px;">
+            <label style="font-size:13px;color:#888;display:block;margin-bottom:8px;">Название Портфолио</label>
+            <input type="text" id="new-portfolio-name" placeholder="" class="np-input" style="margin-bottom:20px;">
+
+            <label style="font-size:13px;color:#888;display:block;margin-bottom:12px;">Выберите цвет</label>
+            <div class="np-colors" id="np-colors">
+              <button class="np-color active" data-color="#00BCD4" style="background:#00BCD4;"></button>
+              <button class="np-color" data-color="#7C4DFF" style="background:#7C4DFF;"></button>
+              <button class="np-color" data-color="#AB47BC" style="background:#AB47BC;"></button>
+              <button class="np-color" data-color="#F7931A" style="background:#F7931A;"></button>
+              <button class="np-color" data-color="#5B8DEF" style="background:#5B8DEF;"></button>
+              <button class="np-color" data-color="#4CAF50" style="background:#4CAF50;"></button>
+            </div>
+
+            <div class="np-toggle-row" style="margin:20px 0;">
+              <div>
+                <div style="font-size:15px;font-weight:600;color:#111;">Учитывать в общей сводке</div>
+                <div style="font-size:12px;color:#888;margin-top:2px;">Учитывать в сводке всех портфолио</div>
+              </div>
+              <label class="np-toggle">
+                <input type="checkbox" id="np-include" checked>
+                <span class="np-toggle-slider"></span>
+              </label>
+            </div>
+
+            <button class="np-submit-btn" id="new-portfolio-submit">Создать Портфолио</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Модалка добавления монеты -->
@@ -669,7 +711,7 @@
   </div>
 </div>
 
-<script src="script.js?v=20260726e"></script>
+<script src="script.js?v=20260726f"></script>
   <!-- Lightbox для скриншотов -->
   <div class="attachment-lightbox" id="attachment-lightbox">
     <button class="attachment-lightbox-close" id="attachment-lightbox-close">✕</button>
