@@ -2123,8 +2123,7 @@ document.getElementById('detail-screenshots-add-btn')?.addEventListener('click',
   let dragOffset = 0;
 
   function slideWidth() {
-    const slide = slider.querySelector('.dash-card-slide');
-    return slide ? slide.offsetWidth + GAP : slider.offsetWidth;
+    return window.innerWidth;
   }
 
   function goTo(idx, animate = true) {
