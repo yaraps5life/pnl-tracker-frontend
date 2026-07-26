@@ -623,7 +623,7 @@ function getShareBlob(cb) {
   document.getElementById('share-canvas').toBlob(cb, 'image/png');
 }
 
-document.getElementById('dash-screenshot-btn').addEventListener('click', openShareCardModal);
+document.getElementById('dash-screenshot-btn')?.addEventListener('click', openShareCardModal);
 document.getElementById('share-card-close').addEventListener('click', closeShareCardModal);
 document.getElementById('share-card-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeShareCardModal();
@@ -1665,7 +1665,7 @@ async function loadExchangeStatus() {
   }
 }
 
-document.getElementById('exchange-connect-btn').addEventListener('click', async () => {
+document.getElementById('exchange-connect-btn')?.addEventListener('click', async () => {
   const apiKey = document.getElementById('exchange-api-key').value.trim();
   const secretKey = document.getElementById('exchange-secret-key').value.trim();
 
@@ -1693,7 +1693,7 @@ document.getElementById('exchange-connect-btn').addEventListener('click', async 
   }
 });
 
-document.getElementById('exchange-sync-btn').addEventListener('click', async () => {
+document.getElementById('exchange-sync-btn')?.addEventListener('click', async () => {
   const btn = document.getElementById('exchange-sync-btn');
   btn.textContent = '⏳ Синхронизация...';
   btn.disabled = true;
@@ -1713,7 +1713,7 @@ document.getElementById('exchange-sync-btn').addEventListener('click', async () 
   }
 });
 
-document.getElementById('exchange-disconnect-btn').addEventListener('click', async () => {
+document.getElementById('exchange-disconnect-btn')?.addEventListener('click', async () => {
   const confirmed = await showConfirmModal({
     title: 'Отключить BingX?',
     text: 'API ключи будут удалены. Уже импортированные сделки останутся.',
@@ -1799,7 +1799,7 @@ async function loadShareStatus() {
   }
 }
 
-document.getElementById('share-generate-btn').addEventListener('click', async () => {
+document.getElementById('share-generate-btn')?.addEventListener('click', async () => {
   try {
     const data = await apiPost('/share/generate', {});
     applyShareUI(data.token);
@@ -1809,7 +1809,7 @@ document.getElementById('share-generate-btn').addEventListener('click', async ()
   }
 });
 
-document.getElementById('share-revoke-btn').addEventListener('click', async () => {
+document.getElementById('share-revoke-btn')?.addEventListener('click', async () => {
   const confirmed = await showConfirmModal({
     title: 'Отозвать ссылку?',
     text: 'Текущая ссылка перестанет работать. Потом можно создать новую.',
@@ -1825,7 +1825,7 @@ document.getElementById('share-revoke-btn').addEventListener('click', async () =
   }
 });
 
-document.getElementById('share-copy-btn').addEventListener('click', () => {
+document.getElementById('share-copy-btn')?.addEventListener('click', () => {
   const val = document.getElementById('share-link-input').value;
   navigator.clipboard?.writeText(val).then(() => {
     const btn = document.getElementById('share-copy-btn');
@@ -1834,7 +1834,7 @@ document.getElementById('share-copy-btn').addEventListener('click', () => {
   });
 });
 
-document.getElementById('settings-delete-row').addEventListener('click', async () => {
+document.getElementById('settings-delete-row')?.addEventListener('click', async () => {
   const confirmed = await showConfirmModal({
     title: 'Удалить все данные?',
     text: 'Будут удалены ВСЕ сделки. Это действие нельзя отменить.',
