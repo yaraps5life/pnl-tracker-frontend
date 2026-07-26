@@ -2122,8 +2122,10 @@ document.getElementById('detail-screenshots-add-btn')?.addEventListener('click',
   let isDragging = false;
   let dragOffset = 0;
 
+  const GAP_PX = 12;
+
   function slideWidth() {
-    return window.innerWidth;
+    return window.innerWidth + GAP_PX;
   }
 
   function goTo(idx, animate = true) {
@@ -2154,24 +2156,27 @@ document.getElementById('detail-screenshots-add-btn')?.addEventListener('click',
 
   dots.forEach((d) => d.addEventListener('click', () => goTo(+d.dataset.idx)));
 
-  slider.addEventListener('touchstart', (e) => {
+  const wrap = slider.parentElement;
+
+  wrap.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
     isDragging = true;
     dragOffset = 0;
     slider.style.transition = 'none';
   }, { passive: true });
 
-  slider.addEventListener('touchmove', (e) => {
+  wrap.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
     dragOffset = e.touches[0].clientX - startX;
     const base = current * slideWidth();
     slider.style.transform = `translateX(${-base + dragOffset}px)`;
   }, { passive: true });
 
-  slider.addEventListener('touchend', () => {
+  wrap.addEventListener('touchend', () => {
+    if (!isDragging) return;
     isDragging = false;
     slider.style.transition = '';
-    const threshold = slideWidth() * 0.25;
+    const threshold = slideWidth() * 0.2;
     if (dragOffset < -threshold) goTo(current + 1);
     else if (dragOffset > threshold) goTo(current - 1);
     else goTo(current);
