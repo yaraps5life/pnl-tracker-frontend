@@ -2525,24 +2525,225 @@ loadDashboard = async function(params = '') {
 
 // ============ Экран выбора актива ============
 
-let _allCoins = [];
+const STATIC_COINS = [
+  {symbol:"BTC",name:"Bitcoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/btc.png"},
+  {symbol:"ETH",name:"Ethereum",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/eth.png"},
+  {symbol:"USDT",name:"Tether",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/usdt.png"},
+  {symbol:"BNB",name:"BNB",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bnb.png"},
+  {symbol:"SOL",name:"Solana",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/sol.png"},
+  {symbol:"XRP",name:"XRP",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/xrp.png"},
+  {symbol:"USDC",name:"USD Coin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/usdc.png"},
+  {symbol:"STETH",name:"Lido Staked ETH",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/steth.png"},
+  {symbol:"ADA",name:"Cardano",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ada.png"},
+  {symbol:"AVAX",name:"Avalanche",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/avax.png"},
+  {symbol:"DOGE",name:"Dogecoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/doge.png"},
+  {symbol:"TRX",name:"TRON",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/trx.png"},
+  {symbol:"TON",name:"Toncoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ton.png"},
+  {symbol:"LINK",name:"Chainlink",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/link.png"},
+  {symbol:"SHIB",name:"Shiba Inu",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/shib.png"},
+  {symbol:"DOT",name:"Polkadot",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dot.png"},
+  {symbol:"BCH",name:"Bitcoin Cash",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bch.png"},
+  {symbol:"NEAR",name:"NEAR Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/near.png"},
+  {symbol:"LTC",name:"Litecoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ltc.png"},
+  {symbol:"UNI",name:"Uniswap",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/uni.png"},
+  {symbol:"APT",name:"Aptos",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/apt.png"},
+  {symbol:"PEPE",name:"Pepe",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/pepe.png"},
+  {symbol:"ICP",name:"Internet Computer",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/icp.png"},
+  {symbol:"FET",name:"Fetch.ai",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/fet.png"},
+  {symbol:"XLM",name:"Stellar",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/xlm.png"},
+  {symbol:"SUI",name:"Sui",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/sui.png"},
+  {symbol:"ATOM",name:"Cosmos",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/atom.png"},
+  {symbol:"OP",name:"Optimism",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/op.png"},
+  {symbol:"ARB",name:"Arbitrum",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/arb.png"},
+  {symbol:"RNDR",name:"Render",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/rndr.png"},
+  {symbol:"VET",name:"VeChain",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/vet.png"},
+  {symbol:"FIL",name:"Filecoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/fil.png"},
+  {symbol:"IMX",name:"Immutable",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/imx.png"},
+  {symbol:"INJ",name:"Injective",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/inj.png"},
+  {symbol:"HBAR",name:"Hedera",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/hbar.png"},
+  {symbol:"ALGO",name:"Algorand",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/algo.png"},
+  {symbol:"GRT",name:"The Graph",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/grt.png"},
+  {symbol:"SAND",name:"The Sandbox",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/sand.png"},
+  {symbol:"MANA",name:"Decentraland",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/mana.png"},
+  {symbol:"AAVE",name:"Aave",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/aave.png"},
+  {symbol:"MKR",name:"Maker",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/mkr.png"},
+  {symbol:"EOS",name:"EOS",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/eos.png"},
+  {symbol:"EGLD",name:"MultiversX",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/egld.png"},
+  {symbol:"THETA",name:"Theta Network",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/theta.png"},
+  {symbol:"XMR",name:"Monero",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/xmr.png"},
+  {symbol:"FLOW",name:"Flow",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/flow.png"},
+  {symbol:"AXS",name:"Axie Infinity",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/axs.png"},
+  {symbol:"SNX",name:"Synthetix",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/snx.png"},
+  {symbol:"CHZ",name:"Chiliz",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/chz.png"},
+  {symbol:"CAKE",name:"PancakeSwap",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/cake.png"},
+  {symbol:"KLAY",name:"Klaytn",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/klay.png"},
+  {symbol:"RUNE",name:"THORChain",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/rune.png"},
+  {symbol:"ENJ",name:"Enjin Coin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/enj.png"},
+  {symbol:"CRV",name:"Curve DAO",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/crv.png"},
+  {symbol:"LDO",name:"Lido DAO",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ldo.png"},
+  {symbol:"GMT",name:"STEPN",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/gmt.png"},
+  {symbol:"APE",name:"ApeCoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ape.png"},
+  {symbol:"FTM",name:"Fantom",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ftm.png"},
+  {symbol:"WLD",name:"Worldcoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/wld.png"},
+  {symbol:"STX",name:"Stacks",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/stx.png"},
+  {symbol:"ROSE",name:"Oasis Network",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/rose.png"},
+  {symbol:"CFX",name:"Conflux",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/cfx.png"},
+  {symbol:"BLUR",name:"Blur",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/blur.png"},
+  {symbol:"FLOKI",name:"Floki",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/floki.png"},
+  {symbol:"GALA",name:"Gala",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/gala.png"},
+  {symbol:"MINA",name:"Mina Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/mina.png"},
+  {symbol:"ZEC",name:"Zcash",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zec.png"},
+  {symbol:"QNT",name:"Quant",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/qnt.png"},
+  {symbol:"XTZ",name:"Tezos",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/xtz.png"},
+  {symbol:"1INCH",name:"1inch",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/1inch.png"},
+  {symbol:"BAT",name:"Basic Attention",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bat.png"},
+  {symbol:"COMP",name:"Compound",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/comp.png"},
+  {symbol:"ZIL",name:"Zilliqa",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zil.png"},
+  {symbol:"ENS",name:"Ethereum Name Service",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ens.png"},
+  {symbol:"DYDX",name:"dYdX",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dydx.png"},
+  {symbol:"KSM",name:"Kusama",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ksm.png"},
+  {symbol:"WIF",name:"dogwifhat",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/wif.png"},
+  {symbol:"BONK",name:"Bonk",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bonk.png"},
+  {symbol:"JUP",name:"Jupiter",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/jup.png"},
+  {symbol:"PYTH",name:"Pyth Network",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/pyth.png"},
+  {symbol:"JTO",name:"Jito",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/jto.png"},
+  {symbol:"TIA",name:"Celestia",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/tia.png"},
+  {symbol:"SEI",name:"Sei",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/sei.png"},
+  {symbol:"STRK",name:"Starknet",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/strk.png"},
+  {symbol:"MANTA",name:"Manta Network",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/manta.png"},
+  {symbol:"ALT",name:"AltLayer",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/alt.png"},
+  {symbol:"PIXEL",name:"Pixels",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/pixel.png"},
+  {symbol:"PORTAL",name:"Portal",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/portal.png"},
+  {symbol:"DYM",name:"Dymension",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dym.png"},
+  {symbol:"ZETA",name:"ZetaChain",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zeta.png"},
+  {symbol:"ETHFI",name:"Ether.fi",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ethfi.png"},
+  {symbol:"ENA",name:"Ethena",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ena.png"},
+  {symbol:"W",name:"Wormhole",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/w.png"},
+  {symbol:"BOME",name:"BOOK OF MEME",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bome.png"},
+  {symbol:"NOT",name:"Notcoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/not.png"},
+  {symbol:"ZK",name:"ZKsync",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zk.png"},
+  {symbol:"IO",name:"IO.NET",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/io.png"},
+  {symbol:"LISTA",name:"Lista DAO",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/lista.png"},
+  {symbol:"ZRO",name:"LayerZero",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zro.png"},
+  {symbol:"DOGS",name:"DOGS",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dogs.png"},
+  {symbol:"HMSTR",name:"Hamster Kombat",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/hmstr.png"},
+  {symbol:"CATI",name:"Catizen",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/cati.png"},
+  {symbol:"EIGEN",name:"EigenLayer",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/eigen.png"},
+  {symbol:"SCR",name:"Scroll",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/scr.png"},
+  {symbol:"NEIRO",name:"Neiro",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/neiro.png"},
+  {symbol:"GRASS",name:"Grass",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/grass.png"},
+  {symbol:"LUNC",name:"Terra Classic",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/lunc.png"},
+  {symbol:"ONDO",name:"Ondo",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ondo.png"},
+  {symbol:"HYPE",name:"Hyperliquid",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/hype.png"},
+  {symbol:"USUAL",name:"Usual",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/usual.png"},
+  {symbol:"PENGU",name:"Pudgy Penguins",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/pengu.png"},
+  {symbol:"TRUMP",name:"OFFICIAL TRUMP",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/trump.png"},
+  {symbol:"MELANIA",name:"Melania Meme",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/melania.png"},
+  {symbol:"AI16Z",name:"ai16z",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ai16z.png"},
+  {symbol:"VINE",name:"Vine",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/vine.png"},
+  {symbol:"TST",name:"Test",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/tst.png"},
+  {symbol:"FARTCOIN",name:"Fartcoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/fartcoin.png"},
+  {symbol:"PNUT",name:"Peanut the Squirrel",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/pnut.png"},
+  {symbol:"ACT",name:"Act I : The AI Prophecy",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/act.png"},
+  {symbol:"VIRTUAL",name:"Virtuals Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/virtual.png"},
+  {symbol:"AIXBT",name:"aixbt by Virtuals",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/aixbt.png"},
+  {symbol:"MOVE",name:"Movement",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/move.png"},
+  {symbol:"ME",name:"Magic Eden",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/me.png"},
+  {symbol:"UXLINK",name:"UXLINK",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/uxlink.png"},
+  {symbol:"KAIA",name:"Kaia",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/kaia.png"},
+  {symbol:"CORE",name:"Core",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/core.png"},
+  {symbol:"BEAM",name:"Beam",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/beam.png"},
+  {symbol:"BB",name:"BounceBit",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bb.png"},
+  {symbol:"OMNI",name:"Omni Network",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/omni.png"},
+  {symbol:"REZ",name:"Renzo",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/rez.png"},
+  {symbol:"SAGA",name:"Saga",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/saga.png"},
+  {symbol:"MOCA",name:"Moca Network",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/moca.png"},
+  {symbol:"KMNO",name:"Kamino",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/kmno.png"},
+  {symbol:"ZKSYNC",name:"zkSync",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zksync.png"},
+  {symbol:"TAO",name:"Bittensor",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/tao.png"},
+  {symbol:"WEN",name:"Wen",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/wen.png"},
+  {symbol:"SLERF",name:"Slerf",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/slerf.png"},
+  {symbol:"BOME",name:"Book of Meme",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bome.png"},
+  {symbol:"MEME",name:"Memecoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/meme.png"},
+  {symbol:"TURBO",name:"Turbo",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/turbo.png"},
+  {symbol:"MOG",name:"Mog Coin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/mog.png"},
+  {symbol:"SPX",name:"SPX6900",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/spx.png"},
+  {symbol:"POPCAT",name:"Popcat",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/popcat.png"},
+  {symbol:"MEW",name:"cat in a dogs world",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/mew.png"},
+  {symbol:"PONKE",name:"Ponke",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ponke.png"},
+  {symbol:"BABYDOGE",name:"Baby Doge Coin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/babydoge.png"},
+  {symbol:"LADYS",name:"Milady Meme Coin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ladys.png"},
+  {symbol:"WOJAK",name:"Wojak",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/wojak.png"},
+  {symbol:"MYRO",name:"Myro",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/myro.png"},
+  {symbol:"MATIC",name:"Polygon",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/matic.png"},
+  {symbol:"CRO",name:"Cronos",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/cro.png"},
+  {symbol:"OKB",name:"OKB",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/okb.png"},
+  {symbol:"HT",name:"Huobi Token",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ht.png"},
+  {symbol:"FTT",name:"FTX Token",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ftt.png"},
+  {symbol:"LEO",name:"UNUS SED LEO",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/leo.png"},
+  {symbol:"BGB",name:"Bitget Token",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bgb.png"},
+  {symbol:"MX",name:"MX Token",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/mx.png"},
+  {symbol:"GT",name:"GateToken",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/gt.png"},
+  {symbol:"KCS",name:"KuCoin Token",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/kcs.png"},
+  {symbol:"NEXO",name:"Nexo",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/nexo.png"},
+  {symbol:"CELO",name:"Celo",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/celo.png"},
+  {symbol:"IOTA",name:"IOTA",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/iota.png"},
+  {symbol:"NEO",name:"Neo",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/neo.png"},
+  {symbol:"DASH",name:"Dash",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dash.png"},
+  {symbol:"ETC",name:"Ethereum Classic",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/etc.png"},
+  {symbol:"XEM",name:"NEM",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/xem.png"},
+  {symbol:"ZEN",name:"Horizen",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zen.png"},
+  {symbol:"DCR",name:"Decred",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dcr.png"},
+  {symbol:"DGB",name:"DigiByte",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dgb.png"},
+  {symbol:"LSK",name:"Lisk",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/lsk.png"},
+  {symbol:"SC",name:"Siacoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/sc.png"},
+  {symbol:"WAVES",name:"Waves",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/waves.png"},
+  {symbol:"ICX",name:"ICON",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/icx.png"},
+  {symbol:"ONT",name:"Ontology",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ont.png"},
+  {symbol:"RVN",name:"Ravencoin",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/rvn.png"},
+  {symbol:"ANKR",name:"Ankr",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ankr.png"},
+  {symbol:"CTSI",name:"Cartesi",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ctsi.png"},
+  {symbol:"BAND",name:"Band Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/band.png"},
+  {symbol:"OCEAN",name:"Ocean Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ocean.png"},
+  {symbol:"RLC",name:"iExec RLC",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/rlc.png"},
+  {symbol:"NMR",name:"Numeraire",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/nmr.png"},
+  {symbol:"REP",name:"Augur",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/rep.png"},
+  {symbol:"MLN",name:"Enzyme",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/mln.png"},
+  {symbol:"ANT",name:"Aragon",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ant.png"},
+  {symbol:"BAL",name:"Balancer",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bal.png"},
+  {symbol:"PERP",name:"Perpetual Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/perp.png"},
+  {symbol:"SUSHI",name:"SushiSwap",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/sushi.png"},
+  {symbol:"YFI",name:"yearn.finance",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/yfi.png"},
+  {symbol:"UMA",name:"UMA",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/uma.png"},
+  {symbol:"KEEP",name:"Keep Network",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/keep.png"},
+  {symbol:"REN",name:"Ren",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/ren.png"},
+  {symbol:"KNC",name:"Kyber Network Crystal",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/knc.png"},
+  {symbol:"ZRX",name:"0x Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/zrx.png"},
+  {symbol:"STORJ",name:"Storj",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/storj.png"},
+  {symbol:"SKL",name:"SKALE",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/skl.png"},
+  {symbol:"NKN",name:"NKN",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/nkn.png"},
+  {symbol:"COTI",name:"COTI",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/coti.png"},
+  {symbol:"DENT",name:"Dent",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/dent.png"},
+  {symbol:"HOT",name:"Holo",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/hot.png"},
+  {symbol:"WIN",name:"WINkLink",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/win.png"},
+  {symbol:"BTT",name:"BitTorrent",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/btt.png"},
+  {symbol:"XVS",name:"Venus",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/xvs.png"},
+  {symbol:"BAKE",name:"BakeryToken",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/bake.png"},
+  {symbol:"ALPHA",name:"Alpha Venture DAO",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/alpha.png"},
+  {symbol:"FOR",name:"ForTube",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/for.png"},
+  {symbol:"BURGER",name:"BurgerCities",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/burger.png"},
+  {symbol:"CREAM",name:"Cream Finance",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/cream.png"},
+  {symbol:"AUTO",name:"Auto",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/auto.png"},
+  {symbol:"HARD",name:"Kava Lend",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/hard.png"},
+  {symbol:"SPARTA",name:"Spartan Protocol",icon:"https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/sparta.png"}
+];
+
 let _coinsLoaded = false;
 
-async function openAssetPicker() {
+function openAssetPicker() {
   document.getElementById('asset-picker-overlay').classList.remove('hidden');
   document.getElementById('asset-search-input').value = '';
-
-  if (!_coinsLoaded) {
-    document.getElementById('asset-list').innerHTML = '<div class="asset-loading">Загрузка монет...</div>';
-    try {
-      _allCoins = await apiGet('/coins/list');
-      _coinsLoaded = true;
-    } catch(e) {
-      document.getElementById('asset-list').innerHTML = '<div class="asset-loading">Не удалось загрузить список</div>';
-      return;
-    }
-  }
-  renderAssetList(_allCoins);
+  renderAssetList(STATIC_COINS);
 }
 
 function renderAssetList(coins) {
@@ -2551,30 +2752,23 @@ function renderAssetList(coins) {
     list.innerHTML = '<div class="asset-loading">Ничего не найдено</div>';
     return;
   }
-  list.innerHTML = coins.slice(0, 100).map(c => `
-    <div class="asset-item" data-id="${c.id}" data-symbol="${c.symbol}" data-name="${c.name}" data-price="${c.current_price || 0}" data-image="${c.image || ''}">
-      ${c.image
-        ? `<img class="asset-icon" src="${c.image}" alt="${c.symbol}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-        : ''
-      }
-      <div class="asset-icon-placeholder" ${c.image ? 'style="display:none"' : ''}>${c.symbol.slice(0,2)}</div>
+  list.innerHTML = coins.map(c => `
+    <div class="asset-item" data-symbol="${c.symbol}" data-name="${c.name}">
+      <img class="asset-icon" src="${c.icon}" alt="${c.symbol}"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="asset-icon-placeholder" style="display:none">${c.symbol.slice(0,2)}</div>
       <div>
         <span class="asset-name">${c.name}</span>
         <span class="asset-ticker">${c.symbol}</span>
       </div>
-      <div class="asset-price">$${c.current_price ? c.current_price.toLocaleString('en', {maximumFractionDigits: 4}) : '—'}</div>
       <svg class="asset-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
   `).join('');
 
-  // Клик по монете → открываем форму добавления
   list.querySelectorAll('.asset-item').forEach(item => {
     item.addEventListener('click', () => {
-      const symbol = item.dataset.symbol;
-      const price = parseFloat(item.dataset.price) || 0;
-      const name = item.dataset.name;
       document.getElementById('asset-picker-overlay').classList.add('hidden');
-      openAddAssetForm(symbol, name, price);
+      openAddAssetForm(item.dataset.symbol, item.dataset.name, 0);
     });
   });
 }
@@ -2584,7 +2778,9 @@ document.getElementById('asset-search-input')?.addEventListener('input', (e) => 
   const q = e.target.value.trim().toLowerCase();
   if (!q) { renderAssetList(_allCoins); return; }
   const filtered = _allCoins.filter(c =>
-    c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)
+    c.name.toLowerCase().startsWith(q) ||
+    c.symbol.toLowerCase().startsWith(q) ||
+    c.name.toLowerCase().includes(q)
   );
   renderAssetList(filtered);
 });
