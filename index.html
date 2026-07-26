@@ -62,39 +62,68 @@
       <select class="dash-subfilter hidden" id="dash-subfilter"></select>
     </div>
 
-    <div class="section" id="dash-card-section">
-      <div class="pnl-card" id="dash-pnl-card">
-        <div class="pnl-card-top">
-          <div class="pnl-card-label" id="dash-pnl-label">Суммарный R</div>
-          <div class="pnl-mode-switch" id="dash-pnl-mode-switch">
-            <button class="pnl-mode-btn" data-mode="r">R</button>
-            <button class="pnl-mode-btn" data-mode="usd">$</button>
-            <button class="pnl-mode-btn" data-mode="pct">%</button>
+    <!-- Свайп-карточки -->
+    <div class="dash-cards-wrap" id="dash-card-section">
+      <div class="dash-cards-slider" id="dash-cards-slider">
+
+        <!-- Карточка 1: Журнал P&L -->
+        <div class="dash-card-slide">
+          <div class="pnl-card" id="dash-pnl-card">
+            <div class="pnl-card-top">
+              <div class="pnl-card-label" id="dash-pnl-label">Суммарный R</div>
+              <div class="pnl-mode-switch" id="dash-pnl-mode-switch">
+                <button class="pnl-mode-btn" data-mode="r">R</button>
+                <button class="pnl-mode-btn" data-mode="usd">$</button>
+                <button class="pnl-mode-btn" data-mode="pct">%</button>
+              </div>
+            </div>
+            <div class="pnl-row">
+              <span class="pnl-value mono" id="dash-pnl">—</span>
+              <button class="dash-eye-btn" id="dash-hide-btn" title="Скрыть/показать">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" id="dash-eye-icon">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <canvas class="equity-chart" id="dash-equity-chart"></canvas>
+            <div class="metrics-row">
+              <div class="metric-card">
+                <div class="metric-label">Винрейт</div>
+                <div class="metric-value mono" id="dash-winrate">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Profit factor</div>
+                <div class="metric-value mono" id="dash-pf">—</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Сделок</div>
+                <div class="metric-value mono" id="dash-count">—</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="pnl-row">
-          <span class="pnl-value mono" id="dash-pnl">—</span>
-          <button class="dash-eye-btn" id="dash-hide-btn" title="Скрыть/показать">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" id="dash-eye-icon">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
-        <canvas class="equity-chart" id="dash-equity-chart"></canvas>
-        <div class="metrics-row">
-          <div class="metric-card">
-            <div class="metric-label">Винрейт</div>
-            <div class="metric-value mono" id="dash-winrate">—</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Profit factor</div>
-            <div class="metric-value mono" id="dash-pf">—</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Сделок</div>
-            <div class="metric-value mono" id="dash-count">—</div>
+
+        <!-- Карточка 2: Спот портфель -->
+        <div class="dash-card-slide">
+          <div class="pnl-card">
+            <div class="pnl-card-top">
+              <div class="pnl-card-label">Спот портфель</div>
+              <button class="dash-action-btn-sm" id="dash-portfolio-add-btn" style="margin:0;">+ монета</button>
+            </div>
+            <div class="pnl-row" style="margin-bottom:4px;">
+              <span class="pnl-value mono" id="dash-portfolio-value">—</span>
+            </div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px;" id="dash-portfolio-pnl">—</div>
+            <div id="dash-portfolio-list"></div>
           </div>
         </div>
+
+      </div>
+
+      <!-- Точки навигации -->
+      <div class="dash-dots">
+        <span class="dash-dot active" data-idx="0"></span>
+        <span class="dash-dot" data-idx="1"></span>
       </div>
     </div>
 
@@ -115,19 +144,6 @@
         <span id="dash-see-all-btn" style="font-size:12px;color:var(--accent);cursor:pointer;">все →</span>
       </div>
       <div class="card" id="dash-recent-list" style="padding:4px 16px;"></div>
-    </div>
-
-    <!-- Спотовый портфель -->
-    <div class="section" id="dash-portfolio-section">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div class="section-label" style="margin-bottom:0;">Спот портфель</div>
-        <button class="dash-action-btn-sm" id="dash-portfolio-add-btn">+ монета</button>
-      </div>
-      <div class="portfolio-total-row" id="dash-portfolio-total" style="display:none">
-        <span class="portfolio-total-value" id="dash-portfolio-value">—</span>
-        <span class="portfolio-total-pnl" id="dash-portfolio-pnl">—</span>
-      </div>
-      <div id="dash-portfolio-list"></div>
     </div>
 
     <!-- Модалка добавления монеты -->
