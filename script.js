@@ -2256,13 +2256,7 @@ async function loadPortfolio() {
 // Открыть модалку
 document.getElementById('dash-portfolio-add-btn')?.addEventListener('click', () => { openAssetPicker(); });
 
-document.getElementById('portfolio-modal-close')?.addEventListener('click', () => {
-  document.getElementById('portfolio-modal-overlay').classList.add('hidden');
-});
-
-document.getElementById('portfolio-modal-overlay')?.addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
-});
+// portfolio-modal удалён — используем screen-add-asset
 
 document.getElementById('portfolio-modal-submit')?.addEventListener('click', async () => {
   const symbol = document.getElementById('portfolio-symbol-input').value.trim().toUpperCase();
@@ -2771,7 +2765,9 @@ function renderAssetList(coins) {
   list.querySelectorAll('.asset-item').forEach(item => {
     item.addEventListener('click', () => {
       document.getElementById('asset-picker-overlay').classList.add('hidden');
-      openAddAssetForm(item.dataset.symbol, item.dataset.name, 0);
+      const img = item.querySelector('.asset-icon');
+      const iconUrl = img ? img.src : '';
+      openAddAssetForm(item.dataset.symbol, item.dataset.name, 0, iconUrl);
     });
   });
 }
@@ -2796,14 +2792,98 @@ document.getElementById('asset-picker-overlay')?.addEventListener('click', (e) =
   if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
 });
 
-// Открыть форму добавления актива с предзаполненными полями
-function openAddAssetForm(symbol, name, price) {
+// Открыть экран добавления актива
+function openAddAssetForm(symbol, name, price, iconUrl = '') {
+  // Заполняем данные
   document.getElementById('portfolio-symbol-input').value = symbol;
   document.getElementById('portfolio-amount-input').value = '';
   document.getElementById('portfolio-price-input').value = price || '';
-  document.getElementById('portfolio-modal-overlay').classList.remove('hidden');
-  // Обновляем заголовок
-  const title = document.querySelector('#portfolio-modal .modal-title');
-  if (title) title.textContent = `Добавить ${name}`;
-  setTimeout(() => document.getElementById('portfolio-amount-input').focus(), 100);
+  document.getElementById('portfolio-total-input').value = '';
+  document.getElementById('add-asset-coin-name').textContent = name;
+  document.getElementById('add-asset-coin-ticker').textContent = symbol;
+  document.getElementById('add-asset-unit').textContent = symbol;
+
+  // Иконка
+  const img = document.getElementById('add-asset-coin-icon');
+  const ph = document.getElementById('add-asset-coin-placeholder');
+  if (iconUrl) {
+    img.src = iconUrl;
+    img.style.display = 'block';
+    ph.style.display = 'none';
+    img.onerror = () => { img.style.display = 'none'; ph.style.display = 'flex'; ph.textContent = symbol.slice(0,2); };
+  } else {
+    img.style.display = 'none';
+    ph.style.display = 'flex';
+    ph.textContent = symbol.slice(0,2);
+  }
+
+  // Дата и время
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0,10);
+  const timeStr = now.toTimeString().slice(0,5);
+  document.getElementById('portfolio-date-input').value = dateStr;
+  document.getElementById('portfolio-time-input').value = timeStr;
+  document.getElementById('add-asset-date-display').textContent = now.toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('add-asset-time-display').textContent = timeStr;
+
+  // Показываем экран
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('screen-add-asset').classList.remove('hidden');
+  setTimeout(() => document.getElementById('portfolio-amount-input').focus(), 150);
 }
+
+// Назад
+document.getElementById('add-asset-back')?.addEventListener('click', () => {
+  document.getElementById('screen-add-asset').classList.add('hidden');
+  document.getElementById('screen-dashboard').classList.remove('hidden');
+});
+
+// Дата/время display
+document.getElementById('portfolio-date-input')?.addEventListener('change', (e) => {
+  const d = new Date(e.target.value + 'T00:00:00');
+  document.getElementById('add-asset-date-display').textContent = d.toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'});
+});
+document.getElementById('portfolio-time-input')?.addEventListener('change', (e) => {
+  document.getElementById('add-asset-time-display').textContent = e.target.value;
+});
+
+// Табы
+document.querySelectorAll('.add-asset-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.add-asset-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Рынок / Custom
+document.getElementById('add-asset-market-btn')?.addEventListener('click', () => {
+  document.getElementById('add-asset-market-btn').classList.add('active');
+  document.getElementById('add-asset-custom-btn').classList.remove('active');
+  document.getElementById('portfolio-price-input').readOnly = true;
+  document.getElementById('portfolio-price-input').style.color = 'var(--text-muted)';
+});
+document.getElementById('add-asset-custom-btn')?.addEventListener('click', () => {
+  document.getElementById('add-asset-custom-btn').classList.add('active');
+  document.getElementById('add-asset-market-btn').classList.remove('active');
+  document.getElementById('portfolio-price-input').readOnly = false;
+  document.getElementById('portfolio-price-input').style.color = '';
+});
+
+// Авторасчёт Total = amount * price
+function recalcTotal() {
+  const amt = parseFloat(document.getElementById('portfolio-amount-input').value) || 0;
+  const price = parseFloat(document.getElementById('portfolio-price-input').value) || 0;
+  if (amt && price) document.getElementById('portfolio-total-input').value = (amt * price).toFixed(2);
+}
+document.getElementById('portfolio-amount-input')?.addEventListener('input', recalcTotal);
+document.getElementById('portfolio-price-input')?.addEventListener('input', () => {
+  document.getElementById('add-asset-custom-btn').classList.add('active');
+  document.getElementById('add-asset-market-btn').classList.remove('active');
+  recalcTotal();
+});
+// Если меняют Total — пересчитываем amount
+document.getElementById('portfolio-total-input')?.addEventListener('input', () => {
+  const total = parseFloat(document.getElementById('portfolio-total-input').value) || 0;
+  const price = parseFloat(document.getElementById('portfolio-price-input').value) || 0;
+  if (total && price) document.getElementById('portfolio-amount-input').value = (total / price).toFixed(8);
+});
