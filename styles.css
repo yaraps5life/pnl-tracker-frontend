@@ -2739,3 +2739,230 @@ label.field-label:first-child { margin-top: 0; }
   color: #CCC;
   flex-shrink: 0;
 }
+
+/* ============ Экран добавления актива (спот) ============ */
+
+#screen-add-asset {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+#screen-add-asset.hidden { display: none !important; }
+
+.add-asset-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 16px 12px;
+  position: relative;
+}
+
+.add-asset-back {
+  position: absolute;
+  left: 16px;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.add-asset-header-coin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-asset-coin-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: contain;
+}
+
+.add-asset-coin-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.add-asset-coin-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.add-asset-coin-ticker {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* Табы */
+.add-asset-tabs {
+  display: flex;
+  margin: 0 16px 16px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.add-asset-tab {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.add-asset-tab.active {
+  background: var(--surface-1);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* Тело формы */
+.add-asset-body {
+  flex: 1;
+  padding: 0 16px;
+}
+
+.add-asset-field-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+
+.add-asset-input-row {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--surface-1);
+}
+
+.add-asset-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: var(--text);
+  outline: none;
+  font-family: var(--font-mono);
+  min-width: 0;
+}
+
+.add-asset-input::placeholder { color: var(--text-muted); }
+
+.add-asset-input-unit {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Рынок / Custom */
+.add-asset-price-toggle {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.add-asset-price-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.add-asset-price-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Дата/время карточка */
+.add-asset-rows-card {
+  margin-top: 16px;
+  background: var(--surface-2);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.add-asset-row-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 16px;
+  cursor: pointer;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+
+.add-asset-row-item:last-child { border-bottom: none; }
+
+.add-asset-row-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+
+.add-asset-row-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.add-asset-date-hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Кнопка внизу */
+.add-asset-footer {
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+.add-asset-submit {
+  width: 100%;
+  padding: 17px;
+  background: var(--accent);
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.add-asset-submit:hover { opacity: 0.9; }
