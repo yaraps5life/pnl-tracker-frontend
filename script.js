@@ -2142,6 +2142,17 @@ document.getElementById('detail-screenshots-add-btn')?.addEventListener('click',
     }
   }
 
+  // Выравниваем высоту второй карточки по первой
+  function equalizeHeight() {
+    const slides = slider.querySelectorAll('.dash-card-slide .pnl-card');
+    if (slides.length < 2) return;
+    slides.forEach(s => s.style.minHeight = '');
+    const h = slides[0].offsetHeight;
+    if (h > 0) slides[1].style.minHeight = h + 'px';
+  }
+  setTimeout(equalizeHeight, 400);
+  window.addEventListener('resize', equalizeHeight);
+
   dots.forEach((d) => d.addEventListener('click', () => goTo(+d.dataset.idx)));
 
   slider.addEventListener('touchstart', (e) => {
