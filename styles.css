@@ -2694,9 +2694,11 @@ label.field-label:first-child { margin-top: 0; }
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
-  background: #F0F0F0;
+  background: #F8F8F8;
+  padding: 2px;
+  box-sizing: border-box;
 }
 
 .asset-icon-placeholder {
