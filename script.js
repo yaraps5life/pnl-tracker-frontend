@@ -2364,13 +2364,15 @@ let selectedPortfolioColor = '#00BCD4';
 // Открыть шторку нового портфеля
 document.getElementById('ps-add-portfolio-btn')?.addEventListener('click', () => {
   closePortfoliosSheet();
-  document.getElementById('new-portfolio-overlay').classList.remove('hidden');
-  document.getElementById('new-portfolio-name').value = '';
-  document.getElementById('np-include').checked = true;
-  // Сброс цвета
-  selectedPortfolioColor = '#00BCD4';
-  document.querySelectorAll('.np-color').forEach(b => b.classList.toggle('active', b.dataset.color === selectedPortfolioColor));
-  document.querySelector('.np-submit-btn').classList.remove('ready');
+  setTimeout(() => {
+    document.getElementById('new-portfolio-overlay').classList.remove('hidden');
+    document.getElementById('new-portfolio-name').value = '';
+    document.getElementById('np-include').checked = true;
+    selectedPortfolioColor = '#00BCD4';
+    document.querySelectorAll('.np-color').forEach(b => b.classList.toggle('active', b.dataset.color === selectedPortfolioColor));
+    document.querySelector('.np-submit-btn').classList.remove('ready');
+    setTimeout(() => document.getElementById('new-portfolio-name').focus(), 100);
+  }, 200);
 });
 
 document.getElementById('new-portfolio-close')?.addEventListener('click', () => {
