@@ -2091,3 +2091,147 @@ label.field-label:first-child { margin-top: 0; }
   color: var(--accent);
   flex-shrink: 0;
 }
+
+/* ============ Спотовый портфель ============ */
+
+.portfolio-total-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.portfolio-total-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.portfolio-total-pnl {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.portfolio-total-pnl.positive { color: var(--success); }
+.portfolio-total-pnl.negative { color: var(--danger); }
+
+.portfolio-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.portfolio-row:last-child { border-bottom: none; }
+
+.portfolio-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.portfolio-symbol {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.portfolio-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.portfolio-row-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.portfolio-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.portfolio-pnl {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.portfolio-pnl.positive { color: var(--success); }
+.portfolio-pnl.negative { color: var(--danger); }
+
+.portfolio-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.portfolio-row:hover .portfolio-delete-btn { opacity: 1; }
+
+.dash-action-btn-sm {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dash-action-btn-sm:hover { background: var(--accent-bg); }
+
+/* Модалка */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.modal-overlay.hidden { display: none; }
+
+.modal-sheet {
+  background: var(--surface-1);
+  border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.modal-body {
+  padding: 16px;
+}
