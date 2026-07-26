@@ -2116,48 +2116,52 @@ document.getElementById('detail-screenshots-add-btn')?.addEventListener('click',
   if (!slider) return;
 
   const SLIDES = 2;
+  const GAP = 12;
   let current = 0;
   let startX = 0;
   let isDragging = false;
   let dragOffset = 0;
 
-  function goTo(idx) {
+  function slideWidth() {
+    const slide = slider.querySelector('.dash-card-slide');
+    return slide ? slide.offsetWidth + GAP : slider.offsetWidth;
+  }
+
+  function goTo(idx, animate = true) {
     current = Math.max(0, Math.min(SLIDES - 1, idx));
-    slider.style.transform = `translateX(-${current * 100}%)`;
+    if (!animate) slider.style.transition = 'none';
+    slider.style.transform = `translateX(-${current * slideWidth()}px)`;
+    if (!animate) requestAnimationFrame(() => { slider.style.transition = ''; });
     dots.forEach((d, i) => d.classList.toggle('active', i === current));
-    // При переходе на портфель — загружаем его
     if (current === 1) loadPortfolio();
-    // Перерисовываем график при возврате на первую карточку
     if (current === 0) {
       setTimeout(() => {
         const canvas = document.getElementById('dash-equity-chart');
         if (canvas && window._dashRCurve) drawEquityCurve(canvas, window._dashRCurve);
-      }, 350);
+      }, 380);
     }
   }
 
-  // Клик по точкам
   dots.forEach((d) => d.addEventListener('click', () => goTo(+d.dataset.idx)));
 
-  // Touch свайп
   slider.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
     isDragging = true;
+    dragOffset = 0;
     slider.style.transition = 'none';
   }, { passive: true });
 
   slider.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
     dragOffset = e.touches[0].clientX - startX;
-    const base = current * 100;
-    const pct = (dragOffset / slider.offsetWidth) * 100;
-    slider.style.transform = `translateX(calc(-${base}% + ${dragOffset}px))`;
+    const base = current * slideWidth();
+    slider.style.transform = `translateX(${-base + dragOffset}px)`;
   }, { passive: true });
 
   slider.addEventListener('touchend', () => {
     isDragging = false;
     slider.style.transition = '';
-    const threshold = slider.offsetWidth * 0.25;
+    const threshold = slideWidth() * 0.25;
     if (dragOffset < -threshold) goTo(current + 1);
     else if (dragOffset > threshold) goTo(current - 1);
     else goTo(current);
