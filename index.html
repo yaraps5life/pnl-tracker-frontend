@@ -27,7 +27,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260726h">
+<link rel="stylesheet" href="styles.css?v=20260726i">
 </head>
 <body>
 
@@ -241,6 +241,29 @@
 
             <button class="np-submit-btn" id="new-portfolio-submit">Создать Портфолио</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран выбора актива -->
+    <div class="ps-overlay hidden" id="asset-picker-overlay">
+      <div class="ps-sheet asset-picker-sheet" id="asset-picker-sheet">
+        <div class="ps-handle"></div>
+        <div class="ps-header">
+          <button class="ps-close" id="asset-picker-back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="ps-title">Выберите актив</span>
+          <div style="width:32px;"></div>
+        </div>
+        <div style="padding:12px 20px 8px;">
+          <div class="asset-search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="asset-search-input" placeholder="Bitcoin" class="asset-search-input">
+          </div>
+        </div>
+        <div class="asset-list" id="asset-list">
+          <div class="asset-loading">Загрузка...</div>
         </div>
       </div>
     </div>
@@ -711,7 +734,7 @@
   </div>
 </div>
 
-<script src="script.js?v=20260726h"></script>
+<script src="script.js?v=20260726i"></script>
   <!-- Lightbox для скриншотов -->
   <div class="attachment-lightbox" id="attachment-lightbox">
     <button class="attachment-lightbox-close" id="attachment-lightbox-close">✕</button>
