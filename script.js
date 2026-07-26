@@ -2764,10 +2764,12 @@ function renderAssetList(coins) {
 
   list.querySelectorAll('.asset-item').forEach(item => {
     item.addEventListener('click', () => {
-      document.getElementById('asset-picker-overlay').classList.add('hidden');
+      // Закрываем picker через анимацию, потом открываем экран
+      const overlay = document.getElementById('asset-picker-overlay');
+      overlay.classList.add('hidden');
       const img = item.querySelector('.asset-icon');
       const iconUrl = img ? img.src : '';
-      openAddAssetForm(item.dataset.symbol, item.dataset.name, 0, iconUrl);
+      setTimeout(() => openAddAssetForm(item.dataset.symbol, item.dataset.name, 0, iconUrl), 50);
     });
   });
 }
@@ -2826,6 +2828,8 @@ function openAddAssetForm(symbol, name, price, iconUrl = '') {
   document.getElementById('add-asset-date-display').textContent = now.toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'});
   document.getElementById('add-asset-time-display').textContent = timeStr;
 
+  // Закрываем все возможные оверлеи
+  document.querySelectorAll('.ps-overlay, .modal-overlay').forEach(o => o.classList.add('hidden'));
   // Показываем экран через showScreen
   showScreen('add-asset');
   // Скрываем таббар на этом экране
