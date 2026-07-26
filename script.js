@@ -2254,7 +2254,7 @@ async function loadPortfolio() {
 }
 
 // Открыть модалку
-document.getElementById('dash-portfolio-add-btn')?.addEventListener('click', () => {
+document.getElementById('dash-portfolio-add-btn')?.addEventListener('click', () => { openAssetPicker(); }); function _old_unused_() {
   editingAssetId = null;
   document.getElementById('portfolio-modal-title').textContent = 'Добавить монету';
   document.getElementById('portfolio-symbol-input').value = '';
@@ -2529,3 +2529,89 @@ const __origLoad = loadDashboard;
 loadDashboard = async function(params = '') {
   await __origLoad(params);
 };
+
+// ============ Экран выбора актива ============
+
+let _allCoins = [];
+let _coinsLoaded = false;
+
+async function openAssetPicker() {
+  document.getElementById('asset-picker-overlay').classList.remove('hidden');
+  document.getElementById('asset-search-input').value = '';
+
+  if (!_coinsLoaded) {
+    document.getElementById('asset-list').innerHTML = '<div class="asset-loading">Загрузка монет...</div>';
+    try {
+      _allCoins = await apiGet('/coins/list');
+      _coinsLoaded = true;
+    } catch(e) {
+      document.getElementById('asset-list').innerHTML = '<div class="asset-loading">Не удалось загрузить список</div>';
+      return;
+    }
+  }
+  renderAssetList(_allCoins);
+}
+
+function renderAssetList(coins) {
+  const list = document.getElementById('asset-list');
+  if (!coins.length) {
+    list.innerHTML = '<div class="asset-loading">Ничего не найдено</div>';
+    return;
+  }
+  list.innerHTML = coins.slice(0, 100).map(c => `
+    <div class="asset-item" data-id="${c.id}" data-symbol="${c.symbol}" data-name="${c.name}" data-price="${c.current_price || 0}" data-image="${c.image || ''}">
+      ${c.image
+        ? `<img class="asset-icon" src="${c.image}" alt="${c.symbol}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        : ''
+      }
+      <div class="asset-icon-placeholder" ${c.image ? 'style="display:none"' : ''}>${c.symbol.slice(0,2)}</div>
+      <div>
+        <span class="asset-name">${c.name}</span>
+        <span class="asset-ticker">${c.symbol}</span>
+      </div>
+      <div class="asset-price">$${c.current_price ? c.current_price.toLocaleString('en', {maximumFractionDigits: 4}) : '—'}</div>
+      <svg class="asset-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  `).join('');
+
+  // Клик по монете → открываем форму добавления
+  list.querySelectorAll('.asset-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const symbol = item.dataset.symbol;
+      const price = parseFloat(item.dataset.price) || 0;
+      const name = item.dataset.name;
+      document.getElementById('asset-picker-overlay').classList.add('hidden');
+      openAddAssetForm(symbol, name, price);
+    });
+  });
+}
+
+// Поиск
+document.getElementById('asset-search-input')?.addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  if (!q) { renderAssetList(_allCoins); return; }
+  const filtered = _allCoins.filter(c =>
+    c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)
+  );
+  renderAssetList(filtered);
+});
+
+document.getElementById('asset-picker-back')?.addEventListener('click', () => {
+  document.getElementById('asset-picker-overlay').classList.add('hidden');
+});
+
+document.getElementById('asset-picker-overlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+});
+
+// Открыть форму добавления актива с предзаполненными полями
+function openAddAssetForm(symbol, name, price) {
+  document.getElementById('portfolio-symbol-input').value = symbol;
+  document.getElementById('portfolio-amount-input').value = '';
+  document.getElementById('portfolio-price-input').value = price || '';
+  document.getElementById('portfolio-modal-overlay').classList.remove('hidden');
+  // Обновляем заголовок
+  const title = document.querySelector('#portfolio-modal .modal-title');
+  if (title) title.textContent = `Добавить ${name}`;
+  setTimeout(() => document.getElementById('portfolio-amount-input').focus(), 100);
+}
