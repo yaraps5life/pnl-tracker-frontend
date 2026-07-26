@@ -2240,23 +2240,30 @@ label.field-label:first-child { margin-top: 0; }
 
 .dash-cards-wrap {
   position: relative;
+  /* overflow скрыт чтобы peek работал */
   overflow: hidden;
-  margin: 0 16px;
+  margin: 0;
+  padding: 0 16px;
+  /* показываем край следующей карточки */
+  box-sizing: border-box;
 }
 
 .dash-cards-slider {
   display: flex;
+  gap: 12px;
   transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
 }
 
 .dash-card-slide {
-  flex: 0 0 100%;
-  width: 100%;
+  /* 85% ширины враппера — остаток виден как peek */
+  flex: 0 0 calc(100% - 28px);
+  width: calc(100% - 28px);
 }
 
 .dash-card-slide .pnl-card {
   margin: 0;
+  height: 100%;
 }
 
 /* Точки */
