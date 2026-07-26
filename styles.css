@@ -2743,11 +2743,17 @@ label.field-label:first-child { margin-top: 0; }
 /* ============ Экран добавления актива (спот) ============ */
 
 #screen-add-asset {
+  position: fixed;
+  inset: 0;
   background: var(--bg);
-  display: flex;
+  display: none;
   flex-direction: column;
-  height: 100%;
+  z-index: 999999;
   overflow-y: auto;
+}
+
+#screen-add-asset.visible {
+  display: flex;
 }
 
 
