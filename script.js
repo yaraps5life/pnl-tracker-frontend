@@ -184,7 +184,7 @@ function showConfirmModal({ title, text, confirmLabel = 'Удалить' }) {
 
 const SCREENS = [
   'onboarding', 'dashboard', 'journal', 'trade-detail',
-  'add-trade', 'analytics', 'exchange', 'settings',
+  'add-trade', 'analytics', 'exchange', 'settings', 'add-asset',
 ];
 
 function showScreen(name) {
@@ -2826,16 +2826,16 @@ function openAddAssetForm(symbol, name, price, iconUrl = '') {
   document.getElementById('add-asset-date-display').textContent = now.toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'});
   document.getElementById('add-asset-time-display').textContent = timeStr;
 
-  // Показываем экран
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  document.getElementById('screen-add-asset').classList.remove('hidden');
+  // Показываем экран через showScreen
+  showScreen('add-asset');
+  // Скрываем таббар на этом экране
+  document.getElementById('tab-bar').classList.add('hidden');
   setTimeout(() => document.getElementById('portfolio-amount-input').focus(), 150);
 }
 
 // Назад
 document.getElementById('add-asset-back')?.addEventListener('click', () => {
-  document.getElementById('screen-add-asset').classList.add('hidden');
-  document.getElementById('screen-dashboard').classList.remove('hidden');
+  showScreen('dashboard');
 });
 
 // Дата/время display
