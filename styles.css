@@ -2197,7 +2197,7 @@ label.field-label:first-child { margin-top: 0; }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.75);
-  z-index: 9000;
+  z-index: 99999;
   display: flex;
   align-items: flex-end;
 }
@@ -2209,6 +2209,8 @@ label.field-label:first-child { margin-top: 0; }
   border-radius: var(--radius) var(--radius) 0 0;
   width: 100%;
   padding-bottom: env(safe-area-inset-bottom);
+  position: relative;
+  z-index: 100000;
 }
 
 .modal-header {
