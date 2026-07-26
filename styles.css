@@ -2544,19 +2544,21 @@ label.field-label:first-child { margin-top: 0; }
 
 .np-colors {
   display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
+  gap: 10px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
 }
 
 .np-color {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: 3px solid transparent;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.15s;
   box-sizing: border-box;
-  flex-shrink: 0;
+  flex: 1;
+  max-width: 48px;
 }
 
 .np-color.active {
