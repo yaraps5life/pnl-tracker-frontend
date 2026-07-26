@@ -389,6 +389,7 @@ async function loadDashboard(params = '') {
     if (showRecent && recent_trades?.length) {
       document.getElementById('dash-recent-list').innerHTML = recent_trades.map(renderTradeRow).join('');
       attachTradeRowHandlers('dash-recent-list');
+      fixCoinIcons('dash-recent-list');
     }
   } catch (e) {
     console.error('Не удалось загрузить дашборд', e);
@@ -690,17 +691,6 @@ function coinIconUrl(symbol) {
   return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${ticker}.png`;
 }
 
-function coinIconUrl(symbol) {
-  // Извлекаем тикер: BTCUSDT -> btc, ETHUSDT -> eth, NCCOGOLD2USD -> xau
-  let ticker = symbol.toLowerCase()
-    .replace('usdt', '').replace('usd', '').replace('-swap', '')
-    .replace('2', '').replace(/[^a-z]/g, '');
-  // Маппинг нестандартных тикеров BingX
-  const map = { 'nccogold': 'xau', 'ncfxeur': 'eur', 'gold': 'xau', 'xauusd': 'xau' };
-  ticker = map[ticker] || ticker;
-  return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${ticker}.png`;
-}
-
 function renderTradeRow(t) {
   const isLong = t.direction === 'long';
   const date = (t.trade_date || t.created_at || '—').split('T')[0].split(' ')[0];
@@ -709,12 +699,9 @@ function renderTradeRow(t) {
   return `
     <div class="trade-row" data-trade-id="${t.id}">
       <div class="trade-left">
-        <div class="trade-icon ${isLong ? 'long' : 'short'}">
-          <img src="${coinIconUrl(t.symbol)}"
-               alt="${t.symbol}"
-               class="coin-icon"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-          /><span class="coin-icon-fallback" style="display:none">${isLong ? '↗' : '↘'}</span>
+        <div class="trade-icon ${isLong ? 'long' : 'short'}"
+             style="background-image:url('${coinIconUrl(t.symbol)}');background-size:22px;background-repeat:no-repeat;background-position:center;"
+             data-fallback="${isLong ? '↗' : '↘'}">
         </div>
         <div>
           <div class="trade-symbol">${t.symbol}</div>
@@ -730,6 +717,20 @@ function renderTradeRow(t) {
       </div>
     </div>
   `;
+}
+
+function fixCoinIcons(containerId) {
+  document.getElementById(containerId).querySelectorAll('.trade-icon[data-fallback]').forEach(el => {
+    const url = el.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/, '$1');
+    if (!url) { el.textContent = el.dataset.fallback; el.style.backgroundImage = ''; return; }
+    const img = new Image();
+    img.onload = () => {}; // OK
+    img.onerror = () => {
+      el.textContent = el.dataset.fallback;
+      el.style.backgroundImage = '';
+    };
+    img.src = url;
+  });
 }
 
 function attachTradeRowHandlers(containerId) {
