@@ -2116,7 +2116,7 @@ document.getElementById('detail-screenshots-add-btn')?.addEventListener('click',
   if (!slider) return;
 
   const SLIDES = 2;
-  const GAP = 12;
+  const GAP = 0;
   let current = 0;
   let startX = 0;
   let isDragging = false;
