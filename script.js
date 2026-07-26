@@ -679,6 +679,28 @@ document.getElementById('dash-fab-btn').addEventListener('click', () => showScre
 
 // ---------- Рендер строки сделки (общий для дашборда и журнала) ----------
 
+function coinIconUrl(symbol) {
+  // Извлекаем тикер: BTCUSDT -> btc, ETHUSDT -> eth, NCCOGOLD2USD -> xau
+  let ticker = symbol.toLowerCase()
+    .replace('usdt', '').replace('usd', '').replace('-swap', '')
+    .replace('2', '').replace(/[^a-z]/g, '');
+  // Маппинг нестандартных тикеров BingX
+  const map = { 'nccogold': 'xau', 'ncfxeur': 'eur', 'gold': 'xau', 'xauusd': 'xau' };
+  ticker = map[ticker] || ticker;
+  return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${ticker}.png`;
+}
+
+function coinIconUrl(symbol) {
+  // Извлекаем тикер: BTCUSDT -> btc, ETHUSDT -> eth, NCCOGOLD2USD -> xau
+  let ticker = symbol.toLowerCase()
+    .replace('usdt', '').replace('usd', '').replace('-swap', '')
+    .replace('2', '').replace(/[^a-z]/g, '');
+  // Маппинг нестандартных тикеров BingX
+  const map = { 'nccogold': 'xau', 'ncfxeur': 'eur', 'gold': 'xau', 'xauusd': 'xau' };
+  ticker = map[ticker] || ticker;
+  return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${ticker}.png`;
+}
+
 function renderTradeRow(t) {
   const isLong = t.direction === 'long';
   const date = (t.trade_date || t.created_at || '—').split('T')[0].split(' ')[0];
@@ -687,7 +709,13 @@ function renderTradeRow(t) {
   return `
     <div class="trade-row" data-trade-id="${t.id}">
       <div class="trade-left">
-        <div class="trade-icon ${isLong ? 'long' : 'short'}">${isLong ? '↗' : '↘'}</div>
+        <div class="trade-icon ${isLong ? 'long' : 'short'}">
+          <img src="${coinIconUrl(t.symbol)}"
+               alt="${t.symbol}"
+               class="coin-icon"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+          /><span class="coin-icon-fallback" style="display:none">${isLong ? '↗' : '↘'}</span>
+        </div>
         <div>
           <div class="trade-symbol">${t.symbol}</div>
           <div class="trade-meta">${date}${entry}</div>
